@@ -468,9 +468,9 @@ func TestStoreDiffOnDemandLookup(t *testing.T) {
 
 	// First record
 	rec1, err := store.Append(tracker.Record{
-		SessionID:    sessID,
-		Model:        "claude-3-5-sonnet",
-		TraceEnabled: true,
+		SessionID:      sessID,
+		Model:          "claude-3-5-sonnet",
+		TraceEnabled:   true,
 		HasFingerprint: true,
 		Fingerprint: &fingerprint.Result{
 			SystemHash:    "sys-1",
@@ -489,9 +489,9 @@ func TestStoreDiffOnDemandLookup(t *testing.T) {
 
 	// Second record in same session with modified tools
 	rec2, err := store.Append(tracker.Record{
-		SessionID:    sessID,
-		Model:        "claude-3-5-sonnet",
-		TraceEnabled: true,
+		SessionID:      sessID,
+		Model:          "claude-3-5-sonnet",
+		TraceEnabled:   true,
 		HasFingerprint: true,
 		Fingerprint: &fingerprint.Result{
 			SystemHash:    "sys-1",
@@ -613,12 +613,12 @@ func TestStoreSummaryTimeSeriesAndGranularity(t *testing.T) {
 	// Append records across different hours today
 	// Hour 10
 	_, _ = store.Append(tracker.Record{
-		Timestamp:    time.Date(2026, 11, 17, 10, 15, 0, 0, time.Local),
-		Alias:        "sonnet",
-		Model:        "claude-3-5-sonnet",
-		Provider:     "anthropic",
-		LatencyMs:    500,
-		TTFTMs:       200,
+		Timestamp: time.Date(2026, 11, 17, 10, 15, 0, 0, time.Local),
+		Alias:     "sonnet",
+		Model:     "claude-3-5-sonnet",
+		Provider:  "anthropic",
+		LatencyMs: 500,
+		TTFTMs:    200,
 		Tokens: tracker.NormalizedTokens{
 			EffectiveInput: 1000,
 			CacheRead:      500,
@@ -628,12 +628,12 @@ func TestStoreSummaryTimeSeriesAndGranularity(t *testing.T) {
 
 	// Hour 11
 	_, _ = store.Append(tracker.Record{
-		Timestamp:    time.Date(2026, 11, 17, 11, 20, 0, 0, time.Local),
-		Alias:        "gpt4o",
-		Model:        "gpt-4o",
-		Provider:     "openai",
-		LatencyMs:    300,
-		TTFTMs:       100,
+		Timestamp: time.Date(2026, 11, 17, 11, 20, 0, 0, time.Local),
+		Alias:     "gpt4o",
+		Model:     "gpt-4o",
+		Provider:  "openai",
+		LatencyMs: 300,
+		TTFTMs:    100,
 		Tokens: tracker.NormalizedTokens{
 			EffectiveInput: 2000,
 			CacheRead:      0,
@@ -920,5 +920,84 @@ func TestStoreConcurrentAppendsAndReads(t *testing.T) {
 	expectedTotal := numWorkers * numAppends
 	if status.RecordCount != expectedTotal {
 		t.Fatalf("expected %d total records, got %d", expectedTotal, status.RecordCount)
+	}
+}
+
+func TestStoreNoOpRetentionPreservesState(t *testing.T) {
+	dataDir := t.TempDir()
+	fixedNow := time.Date(2026, 11, 17, 12, 0, 0, 0, time.Local)
+	nowFn := func() time.Time { return fixedNow }
+
+	store, err := storage.Open(dataDir, abi.PluginConfig{
+		RetentionDays: 14,
+		MaxDiskMB:     200,
+		DataDir:       dataDir,
+	}, nowFn)
+	if err != nil {
+		t.Fatalf("Open failed: %v", err)
+	}
+	defer store.Close()
+
+	rec, err := store.Append(tracker.Record{
+		Model:          "claude-3-5-sonnet",
+		TraceEnabled:   true,
+		HasFingerprint: true,
+		Fingerprint: &fingerprint.Result{
+			SystemHash: "sys-fp-1",
+		},
+		Tokens: tracker.NormalizedTokens{
+			EffectiveInput: 500,
+		},
+	})
+	if err != nil {
+		t.Fatalf("Append failed: %v", err)
+	}
+
+	// 1. Initial retention check when under caps should be a complete no-op (changed == false)
+	changed := store.EnforceRetention()
+	if changed {
+		t.Fatalf("expected EnforceRetention to return false when under caps, got true")
+	}
+
+	// Status and record diff should resolve seamlessly
+	diffResp, err := store.Diff(rec.ID)
+	if err != nil {
+		t.Fatalf("Diff failed: %v", err)
+	}
+	if diffResp.Record.ID != rec.ID {
+		t.Fatalf("expected record ID %s, got %s", rec.ID, diffResp.Record.ID)
+	}
+
+	// 2. Add an expired file older than 14 days (e.g. 2026-10-01)
+	oldFn := "usage-2026-10-01.jsonl"
+	oldRec := tracker.Record{
+		ID:        "rec-old-1",
+		Timestamp: time.Date(2026, 10, 1, 10, 0, 0, 0, time.Local),
+		Model:     "claude-3-5-sonnet",
+		Tokens: tracker.NormalizedTokens{
+			EffectiveInput: 100,
+		},
+	}
+	oldData, _ := json.Marshal(oldRec)
+	oldData = append(oldData, '\n')
+	if err := os.WriteFile(filepath.Join(dataDir, oldFn), oldData, 0600); err != nil {
+		t.Fatalf("failed to write old file: %v", err)
+	}
+
+	// Now EnforceRetention must detect the expired file, prune it, and return changed == true
+	changed = store.EnforceRetention()
+	if !changed {
+		t.Fatalf("expected EnforceRetention to return true after pruning old file, got false")
+	}
+
+	// Check old file is deleted
+	if _, err := os.Stat(filepath.Join(dataDir, oldFn)); !os.IsNotExist(err) {
+		t.Fatalf("expected old file to be deleted")
+	}
+
+	// Subsequent retention check with no expired files must return changed == false again
+	changedAgain := store.EnforceRetention()
+	if changedAgain {
+		t.Fatalf("expected second EnforceRetention to return false, got true")
 	}
 }

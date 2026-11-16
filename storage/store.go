@@ -112,37 +112,37 @@ type RecordsQuery struct {
 
 // RecordSummary provides a compact, content-free representation of a tracker.Record.
 type RecordSummary struct {
-	ID                   string                  `json:"id"`
-	Timestamp            time.Time               `json:"timestamp"`
-	TraceID              string                  `json:"trace_id,omitempty"`
-	RequestID            string                  `json:"request_id,omitempty"`
-	Provider             string                  `json:"provider,omitempty"`
-	ExecutorType         string                  `json:"executor_type,omitempty"`
-	Model                string                  `json:"model,omitempty"`
-	Alias                string                  `json:"alias,omitempty"`
-	DisplayModel         string                  `json:"display_model,omitempty"`
-	AuthID               string                  `json:"auth_id,omitempty"`
-	SessionID            string                  `json:"session_id,omitempty"`
-	ParentSessionID      string                  `json:"parent_session_id,omitempty"`
-	LCPAffinitySessionID string                  `json:"lcp_affinity_session_id,omitempty"`
-	EffectiveSessionKey  string                  `json:"effective_session_key,omitempty"`
-	IsFork               bool                    `json:"is_fork,omitempty"`
-	IsCompaction         bool                    `json:"is_compaction,omitempty"`
-	RecordKind           string                  `json:"record_kind,omitempty"`
-	Stream               bool                    `json:"stream,omitempty"`
-	Failed               bool                    `json:"failed,omitempty"`
-	StatusCode           int                     `json:"status_code,omitempty"`
-	LatencyMs            int64                   `json:"latency_ms,omitempty"`
-	TTFTMs               int64                   `json:"ttft_ms,omitempty"`
+	ID                   string                   `json:"id"`
+	Timestamp            time.Time                `json:"timestamp"`
+	TraceID              string                   `json:"trace_id,omitempty"`
+	RequestID            string                   `json:"request_id,omitempty"`
+	Provider             string                   `json:"provider,omitempty"`
+	ExecutorType         string                   `json:"executor_type,omitempty"`
+	Model                string                   `json:"model,omitempty"`
+	Alias                string                   `json:"alias,omitempty"`
+	DisplayModel         string                   `json:"display_model,omitempty"`
+	AuthID               string                   `json:"auth_id,omitempty"`
+	SessionID            string                   `json:"session_id,omitempty"`
+	ParentSessionID      string                   `json:"parent_session_id,omitempty"`
+	LCPAffinitySessionID string                   `json:"lcp_affinity_session_id,omitempty"`
+	EffectiveSessionKey  string                   `json:"effective_session_key,omitempty"`
+	IsFork               bool                     `json:"is_fork,omitempty"`
+	IsCompaction         bool                     `json:"is_compaction,omitempty"`
+	RecordKind           string                   `json:"record_kind,omitempty"`
+	Stream               bool                     `json:"stream,omitempty"`
+	Failed               bool                     `json:"failed,omitempty"`
+	StatusCode           int                      `json:"status_code,omitempty"`
+	LatencyMs            int64                    `json:"latency_ms,omitempty"`
+	TTFTMs               int64                    `json:"ttft_ms,omitempty"`
 	Tokens               tracker.NormalizedTokens `json:"tokens"`
-	TraceEnabled         bool                    `json:"trace_enabled,omitempty"`
-	HasFingerprint       bool                    `json:"has_fingerprint,omitempty"`
-	PrevID               string                  `json:"prev_id,omitempty"`
-	MissReason           string                  `json:"miss_reason,omitempty"`
-	BodyBytes            int                     `json:"body_bytes,omitempty"`
-	MessageCount         int                     `json:"message_count,omitempty"`
-	IsContinuation       bool                    `json:"is_continuation,omitempty"`
-	ParseSkipped         bool                    `json:"parse_skipped,omitempty"`
+	TraceEnabled         bool                     `json:"trace_enabled,omitempty"`
+	HasFingerprint       bool                     `json:"has_fingerprint,omitempty"`
+	PrevID               string                   `json:"prev_id,omitempty"`
+	MissReason           string                   `json:"miss_reason,omitempty"`
+	BodyBytes            int                      `json:"body_bytes,omitempty"`
+	MessageCount         int                      `json:"message_count,omitempty"`
+	IsContinuation       bool                     `json:"is_continuation,omitempty"`
+	ParseSkipped         bool                     `json:"parse_skipped,omitempty"`
 }
 
 // RecordsResponse contains paginated record summaries.
@@ -245,8 +245,10 @@ func Open(dataDir string, cfg abi.PluginConfig, nowFn func() time.Time) (*Store,
 	}
 
 	s.mu.Lock()
-	s.enforceRetentionLocked()
-	s.reloadRecordsLocked()
+	changed := s.enforceRetentionLocked()
+	if !changed {
+		s.reloadRecordsLocked()
+	}
 	s.mu.Unlock()
 
 	// Periodic retention ticker (every 10 minutes)
@@ -292,6 +294,14 @@ func (s *Store) UpdateConfig(cfg abi.PluginConfig) {
 	defer s.mu.Unlock()
 	s.cfg = cfg
 	s.enforceRetentionLocked()
+}
+
+// EnforceRetention checks age and disk capacity limits, pruning files if necessary.
+// It returns true if any files were deleted or trimmed and in-memory state was reloaded.
+func (s *Store) EnforceRetention() bool {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.enforceRetentionLocked()
 }
 
 // Append persists a new record, computes display model, PrevID, MissReason, and updates LRU and indexes.
@@ -648,8 +658,9 @@ func (s *Store) fileCountLocked() int {
 	return count
 }
 
-func (s *Store) enforceRetentionLocked() {
+func (s *Store) enforceRetentionLocked() bool {
 	now := s.now().In(time.Local)
+	changed := false
 
 	// 1. Age-based pruning
 	if s.cfg.RetentionDays > 0 {
@@ -663,7 +674,9 @@ func (s *Store) enforceRetentionLocked() {
 					dateStr := strings.TrimSuffix(strings.TrimPrefix(f.Name(), "usage-"), ".jsonl")
 					if fDate, err := time.ParseInLocation("2006-01-02", dateStr, now.Location()); err == nil {
 						if fDate.Before(cutoff) {
-							_ = os.Remove(filepath.Join(s.dataDir, f.Name()))
+							if err := os.Remove(filepath.Join(s.dataDir, f.Name())); err == nil {
+								changed = true
+							}
 						}
 					}
 				}
@@ -704,23 +717,30 @@ func (s *Store) enforceRetentionLocked() {
 
 	for totalBytes > maxBytes && len(files) > 1 {
 		oldest := files[0]
-		_ = os.Remove(filepath.Join(s.dataDir, oldest.name))
+		if err := os.Remove(filepath.Join(s.dataDir, oldest.name)); err == nil {
+			changed = true
+		}
 		totalBytes -= oldest.size
 		files = files[1:]
 	}
 
 	if len(files) == 1 && totalBytes > maxBytes {
 		targetBytes := maxBytes * 80 / 100
-		s.trimSingleFile(filepath.Join(s.dataDir, files[0].name), targetBytes)
+		if s.trimSingleFile(filepath.Join(s.dataDir, files[0].name), targetBytes) {
+			changed = true
+		}
 	}
 
-	s.reloadRecordsLocked()
+	if changed {
+		s.reloadRecordsLocked()
+	}
+	return changed
 }
 
-func (s *Store) trimSingleFile(filePath string, targetBytes int64) {
+func (s *Store) trimSingleFile(filePath string, targetBytes int64) bool {
 	f, err := os.Open(filePath)
 	if err != nil {
-		return
+		return false
 	}
 
 	var lines [][]byte
@@ -732,7 +752,7 @@ func (s *Store) trimSingleFile(filePath string, targetBytes int64) {
 				break
 			}
 			f.Close()
-			return
+			return false
 		}
 		for isPrefix {
 			var extra []byte
@@ -751,7 +771,7 @@ func (s *Store) trimSingleFile(filePath string, targetBytes int64) {
 	f.Close()
 
 	if len(lines) == 0 {
-		return
+		return false
 	}
 
 	var kept [][]byte
@@ -766,6 +786,10 @@ func (s *Store) trimSingleFile(filePath string, targetBytes int64) {
 		}
 	}
 
+	if len(kept) == len(lines) {
+		return false
+	}
+
 	// Reverse to original order
 	for i, j := 0, len(kept)-1; i < j; i, j = i+1, j-1 {
 		kept[i], kept[j] = kept[j], kept[i]
@@ -773,7 +797,7 @@ func (s *Store) trimSingleFile(filePath string, targetBytes int64) {
 
 	tmp, err := os.CreateTemp(s.dataDir, "trim-*.tmp")
 	if err != nil {
-		return
+		return false
 	}
 	defer os.Remove(tmp.Name())
 
@@ -784,15 +808,18 @@ func (s *Store) trimSingleFile(filePath string, targetBytes int64) {
 	}
 	if err := writer.Flush(); err != nil {
 		tmp.Close()
-		return
+		return false
 	}
 	if err := tmp.Sync(); err != nil {
 		tmp.Close()
-		return
+		return false
 	}
 	tmp.Close()
 
-	_ = os.Rename(tmp.Name(), filePath)
+	if err := os.Rename(tmp.Name(), filePath); err != nil {
+		return false
+	}
+	return true
 }
 
 func (s *Store) reloadRecordsLocked() {
@@ -848,10 +875,10 @@ func (s *Store) reloadRecordsLocked() {
 			}
 
 			if rec.RecordKind == "" {
-		rec.RecordKind = "main"
-	}
+				rec.RecordKind = "main"
+			}
 
-	rec.DisplayModel = strings.TrimSpace(rec.Alias)
+			rec.DisplayModel = strings.TrimSpace(rec.Alias)
 			if rec.DisplayModel == "" {
 				rec.DisplayModel = strings.TrimSpace(rec.Model)
 			}
