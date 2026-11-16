@@ -170,8 +170,8 @@ max_message_hashes: 512
 		Model:        "gpt-4o",
 		Body:         turn1Body,
 		Metadata: map[string]any{
-			"selected_auth_id":      "auth-user-1",
-			"canonical_session_id":  "sess-turn-conv",
+			"selected_auth_id":     "auth-user-1",
+			"canonical_session_id": "sess-turn-conv",
 		},
 	}
 	interceptBytes1, _ := json.Marshal(interceptReq1)
@@ -181,6 +181,7 @@ max_message_hashes: 512
 
 	// Turn 1 usage.handle
 	usageReq1 := abi.UsageRecord{
+		Generate:  true,
 		RequestID: "req-turn-1",
 		TraceID:   "trace-turn-1",
 		AuthID:    "auth-user-1",
@@ -245,8 +246,8 @@ max_message_hashes: 512
 		Model:        "gpt-4o",
 		Body:         turn2Body,
 		Metadata: map[string]any{
-			"selected_auth_id":      "auth-user-1",
-			"canonical_session_id":  "sess-turn-conv",
+			"selected_auth_id":     "auth-user-1",
+			"canonical_session_id": "sess-turn-conv",
 		},
 	}
 	interceptBytes2, _ := json.Marshal(interceptReq2)
@@ -256,6 +257,7 @@ max_message_hashes: 512
 
 	// Turn 2 usage.handle (miss due to tools changed)
 	usageReq2 := abi.UsageRecord{
+		Generate:  true,
 		RequestID: "req-turn-2",
 		TraceID:   "trace-turn-2",
 		AuthID:    "auth-user-1",
@@ -402,8 +404,8 @@ max_message_hashes: 512
 		Model:        "claude-3-5-sonnet",
 		Body:         nil, // Body omitted by host!
 		Metadata: map[string]any{
-			"selected_auth_id":      "auth-meta-1",
-			"canonical_session_id":  "sess-meta",
+			"selected_auth_id":     "auth-meta-1",
+			"canonical_session_id": "sess-meta",
 		},
 	}
 	metaBytes, _ := json.Marshal(metaInterceptReq)
@@ -413,6 +415,7 @@ max_message_hashes: 512
 
 	// Send usage with cache read
 	metaUsage := abi.UsageRecord{
+		Generate:  true,
 		RequestID: "req-meta-only",
 		TraceID:   "trace-meta-only",
 		AuthID:    "auth-meta-1",
@@ -465,6 +468,7 @@ max_message_hashes: 512
 	scBytes, _ := json.Marshal(subcallIntercept)
 	_, _ = d.HandleCall(abi.MethodRequestInterceptAfter, scBytes)
 	scUsageBytes, _ := json.Marshal(abi.UsageRecord{
+		Generate:  true,
 		RequestID: "req-subcall",
 		TraceID:   "trace-subcall",
 		Detail:    abi.UsageDetail{InputTokens: 500, OutputTokens: 100},
@@ -483,6 +487,7 @@ max_message_hashes: 512
 	ccBytes, _ := json.Marshal(compactIntercept)
 	_, _ = d.HandleCall(abi.MethodRequestInterceptAfter, ccBytes)
 	ccUsageBytes, _ := json.Marshal(abi.UsageRecord{
+		Generate:  true,
 		RequestID: "req-compact",
 		TraceID:   "trace-compact",
 		Detail:    abi.UsageDetail{InputTokens: 600, OutputTokens: 150},
@@ -581,6 +586,7 @@ max_message_hashes: 512
 
 				// Usage
 				usage := abi.UsageRecord{
+					Generate:  true,
 					RequestID: reqID,
 					TraceID:   traceID,
 					AuthID:    fmt.Sprintf("auth-%d", workerID),
@@ -824,6 +830,7 @@ max_message_hashes: 512
 
 	// Subsequent calls must fail gracefully without panicking
 	usageBytes, _ := json.Marshal(abi.UsageRecord{
+		Generate:  true,
 		RequestID: "req-fail",
 		TraceID:   "trace-fail",
 		Detail:    abi.UsageDetail{InputTokens: 10},
@@ -883,6 +890,7 @@ max_message_hashes: 512
 
 	// Usage with Failed: true and StatusCode: 0 (unspecified)
 	usageBytes, _ := json.Marshal(abi.UsageRecord{
+		Generate:  true,
 		RequestID: "req-err-zero",
 		TraceID:   "trace-err-zero",
 		Model:     "gpt-4o",
@@ -906,5 +914,138 @@ max_message_hashes: 512
 	}
 	if !recs.Items[0].Failed {
 		t.Errorf("expected Failed == true")
+	}
+}
+
+func TestUsageSessionIDPreservation(t *testing.T) {
+	tempDir := t.TempDir()
+	d := main.NewDispatcher()
+
+	regConfigYAML := fmt.Sprintf(`
+data_dir: %q
+trace_enabled: true
+retention_days: 14
+max_disk_mb: 200
+max_message_hashes: 512
+`, tempDir)
+
+	regReqBytes, _ := json.Marshal(abi.LifecycleRequest{
+		ConfigYAML:    []byte(regConfigYAML),
+		SchemaVersion: 10,
+	})
+	if _, err := d.HandleCall(abi.MethodPluginRegister, regReqBytes); err != nil {
+		t.Fatalf("register failed: %v", err)
+	}
+
+	// Case 1: No intercept at all (att == nil).
+	// UsageRecord has non-empty SessionID and ParentSessionID.
+	usage1Bytes, _ := json.Marshal(abi.UsageRecord{
+		Generate:        true,
+		RequestID:       "req-no-intercept",
+		TraceID:         "trace-no-intercept",
+		Model:           "gpt-4o",
+		SessionID:       "sess-fallback-1",
+		ParentSessionID: "sess-parent-1",
+		Detail:          abi.UsageDetail{InputTokens: 100},
+	})
+	if _, err := d.HandleCall(abi.MethodUsageHandle, usage1Bytes); err != nil {
+		t.Fatalf("usage1 failed: %v", err)
+	}
+
+	// Case 2: Intercept exists, but att.CanonicalSessionID is empty.
+	// UsageRecord has non-empty SessionID and ParentSessionID, which must NOT be wiped by empty intercept metadata.
+	intercept2Bytes, _ := json.Marshal(abi.RequestInterceptRequest{
+		RequestID: "req-empty-intercept-sess",
+		TraceID:   "trace-empty-intercept-sess",
+		Model:     "gpt-4o",
+		Metadata:  map[string]any{}, // no canonical_session_id
+	})
+	if _, err := d.HandleCall(abi.MethodRequestInterceptAfter, intercept2Bytes); err != nil {
+		t.Fatalf("intercept2 failed: %v", err)
+	}
+
+	usage2Bytes, _ := json.Marshal(abi.UsageRecord{
+		Generate:        true,
+		RequestID:       "req-empty-intercept-sess",
+		TraceID:         "trace-empty-intercept-sess",
+		Model:           "gpt-4o",
+		SessionID:       "sess-fallback-2",
+		ParentSessionID: "sess-parent-2",
+		Detail:          abi.UsageDetail{InputTokens: 100},
+	})
+	if _, err := d.HandleCall(abi.MethodUsageHandle, usage2Bytes); err != nil {
+		t.Fatalf("usage2 failed: %v", err)
+	}
+
+	// Case 3: Intercept has canonical_session_id, which should overwrite UsageRecord's SessionID.
+	intercept3Bytes, _ := json.Marshal(abi.RequestInterceptRequest{
+		RequestID: "req-with-canonical",
+		TraceID:   "trace-with-canonical",
+		Model:     "gpt-4o",
+		Metadata: map[string]any{
+			"canonical_session_id": "sess-canonical-override",
+		},
+	})
+	if _, err := d.HandleCall(abi.MethodRequestInterceptAfter, intercept3Bytes); err != nil {
+		t.Fatalf("intercept3 failed: %v", err)
+	}
+
+	usage3Bytes, _ := json.Marshal(abi.UsageRecord{
+		Generate:        true,
+		RequestID:       "req-with-canonical",
+		TraceID:         "trace-with-canonical",
+		Model:           "gpt-4o",
+		SessionID:       "sess-initial-3",
+		ParentSessionID: "sess-parent-3",
+		Detail:          abi.UsageDetail{InputTokens: 100},
+	})
+	if _, err := d.HandleCall(abi.MethodUsageHandle, usage3Bytes); err != nil {
+		t.Fatalf("usage3 failed: %v", err)
+	}
+
+	// Query records and verify each case
+	recordsResp := callManagement(t, d, http.MethodGet, "/v0/management/plugins/cpa-cache-tracker/records?limit=10", nil)
+	var recs storage.RecordsResponse
+	if err := json.Unmarshal(recordsResp.Body, &recs); err != nil {
+		t.Fatalf("unmarshal records failed: %v", err)
+	}
+	if len(recs.Items) != 3 {
+		t.Fatalf("expected 3 records, got %d", len(recs.Items))
+	}
+
+	// Build map by RequestID
+	byReq := make(map[string]storage.RecordSummary)
+	for _, item := range recs.Items {
+		byReq[item.RequestID] = item
+	}
+
+	// Verify Case 1
+	item1, ok := byReq["req-no-intercept"]
+	if !ok {
+		t.Fatalf("missing item1")
+	}
+	if item1.SessionID != "sess-fallback-1" {
+		t.Errorf("case 1: expected SessionID 'sess-fallback-1', got %q", item1.SessionID)
+	}
+	if item1.RecordKind != "main" {
+		t.Errorf("case 1: expected RecordKind 'main', got %q", item1.RecordKind)
+	}
+
+	// Verify Case 2
+	item2, ok := byReq["req-empty-intercept-sess"]
+	if !ok {
+		t.Fatalf("missing item2")
+	}
+	if item2.SessionID != "sess-fallback-2" {
+		t.Errorf("case 2: expected SessionID 'sess-fallback-2', got %q", item2.SessionID)
+	}
+
+	// Verify Case 3
+	item3, ok := byReq["req-with-canonical"]
+	if !ok {
+		t.Fatalf("missing item3")
+	}
+	if item3.SessionID != "sess-canonical-override" {
+		t.Errorf("case 3: expected SessionID 'sess-canonical-override', got %q", item3.SessionID)
 	}
 }

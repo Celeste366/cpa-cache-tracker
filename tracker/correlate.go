@@ -13,6 +13,7 @@ import (
 // PendingAttempt records an in-flight request intercepted before/after execution,
 // awaiting usage correlation or completion.
 type PendingAttempt struct {
+	SelectionID          string
 	TraceID              string
 	HandlerReqID         string
 	AttemptSeq           int
@@ -104,6 +105,7 @@ func (c *Correlator) RecordInterceptAfter(req abi.RequestInterceptRequest, trace
 	seq := c.seqByTrace[key]
 
 	attempt := &PendingAttempt{
+		SelectionID:          getString(req.Metadata, "selection_id"),
 		TraceID:              req.TraceID,
 		HandlerReqID:         req.RequestID,
 		AttemptSeq:           seq,
@@ -165,9 +167,17 @@ func (c *Correlator) MatchUsage(u abi.UsageRecord, now time.Time) (*PendingAttem
 	uModel := strings.TrimSpace(u.Model)
 
 	matchIdx := -1
+	if selectionID := strings.TrimSpace(u.SelectionID); selectionID != "" {
+		for i, att := range attempts {
+			if att.SelectionID == selectionID {
+				matchIdx = i
+				break
+			}
+		}
+	}
 
 	// Priority 1: Exact AuthID == u.AuthID && Model == u.Model (earliest FIFO)
-	if uAuthID != "" && uModel != "" {
+	if matchIdx == -1 && uAuthID != "" && uModel != "" {
 		for i, att := range attempts {
 			if att.AuthID == uAuthID && (att.Model == uModel || (att.Model == "" && att.RequestedModel == uModel)) {
 				matchIdx = i
@@ -330,7 +340,10 @@ func extractMetadata(req abi.RequestInterceptRequest) (authID, canSessID, parent
 	isFork = getBool(meta, "is_fork")
 	isCompaction = getBool(meta, "is_compaction")
 
-	modelExecSource := getString(meta, "model_execution_source")
+	modelExecSource := getString(meta, "source")
+	if modelExecSource == "" {
+		modelExecSource = getString(meta, "model_execution_source")
+	}
 	requestPath := getString(meta, "request_path")
 	alt := getString(meta, "alt")
 

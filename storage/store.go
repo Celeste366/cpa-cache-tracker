@@ -201,7 +201,7 @@ type Store struct {
 	records        []RecordSummary
 	recordFileByID map[string]string
 
-	lastBySessionModel map[sessionModelKey]*tracker.Record
+	lastBySessionModel map[sessionModelKey]string
 
 	hotLRU    *list.List
 	hotLRUMap map[string]*list.Element
@@ -237,7 +237,7 @@ func Open(dataDir string, cfg abi.PluginConfig, nowFn func() time.Time) (*Store,
 		nowFn:              nowFn,
 		records:            make([]RecordSummary, 0),
 		recordFileByID:     make(map[string]string),
-		lastBySessionModel: make(map[sessionModelKey]*tracker.Record),
+		lastBySessionModel: make(map[sessionModelKey]string),
 		hotLRU:             list.New(),
 		hotLRUMap:          make(map[string]*list.Element),
 		maxHot:             500,
@@ -338,7 +338,9 @@ func (s *Store) Append(rec tracker.Record) (tracker.Record, error) {
 	var prev *tracker.Record
 	sessKey := sessionModelKey{SessionKey: rec.EffectiveSessionKey, Model: rec.Model}
 	if rec.EffectiveSessionKey != "" && rec.Model != "" {
-		prev = s.lastBySessionModel[sessKey]
+		if prevID := s.lastBySessionModel[sessKey]; prevID != "" {
+			prev, _ = s.getRecordLocked(prevID)
+		}
 	}
 
 	if !rec.Failed {
@@ -348,10 +350,6 @@ func (s *Store) Append(rec tracker.Record) (tracker.Record, error) {
 		reason, _ := tracker.ClassifyMissReason(&rec, prev)
 		rec.MissReason = reason
 
-		if rec.EffectiveSessionKey != "" && rec.Model != "" {
-			recCopy := rec
-			s.lastBySessionModel[sessKey] = &recCopy
-		}
 	} else {
 		rec.MissReason = ""
 	}
@@ -379,6 +377,9 @@ func (s *Store) Append(rec tracker.Record) (tracker.Record, error) {
 
 	summary := recordToSummary(rec)
 	s.records = append(s.records, summary)
+	if !rec.Failed && rec.EffectiveSessionKey != "" && rec.Model != "" {
+		s.lastBySessionModel[sessKey] = rec.ID
+	}
 	s.recordFileByID[rec.ID] = fileName
 	s.putHotLRU(&rec)
 
@@ -569,7 +570,7 @@ func (s *Store) Purge(olderThanDays int, all bool) (PurgeResult, error) {
 		result.DeletedRecords = len(s.records)
 		s.records = make([]RecordSummary, 0)
 		s.recordFileByID = make(map[string]string)
-		s.lastBySessionModel = make(map[sessionModelKey]*tracker.Record)
+		s.lastBySessionModel = make(map[sessionModelKey]string)
 		s.hotLRU = list.New()
 		s.hotLRUMap = make(map[string]*list.Element)
 
@@ -825,7 +826,7 @@ func (s *Store) trimSingleFile(filePath string, targetBytes int64) bool {
 func (s *Store) reloadRecordsLocked() {
 	s.records = make([]RecordSummary, 0)
 	s.recordFileByID = make(map[string]string)
-	s.lastBySessionModel = make(map[sessionModelKey]*tracker.Record)
+	s.lastBySessionModel = make(map[sessionModelKey]string)
 	s.hotLRU = list.New()
 	s.hotLRUMap = make(map[string]*list.Element)
 
@@ -896,9 +897,8 @@ func (s *Store) reloadRecordsLocked() {
 			s.putHotLRU(&rec)
 
 			if !rec.Failed && rec.EffectiveSessionKey != "" && rec.Model != "" {
-				recCopy := rec
 				key := sessionModelKey{SessionKey: rec.EffectiveSessionKey, Model: rec.Model}
-				s.lastBySessionModel[key] = &recCopy
+				s.lastBySessionModel[key] = rec.ID
 			}
 		}
 		f.Close()
@@ -1043,6 +1043,11 @@ func (s *Store) Summary(q SummaryQuery) SummaryResponse {
 		if rec.Failed {
 			totals.FailedRequests++
 			mAcc.failedRequests++
+			continue
+		}
+
+		// Requests without input telemetry cannot contribute to cache hit rates.
+		if rec.Tokens.EffectiveInput <= 0 {
 			continue
 		}
 

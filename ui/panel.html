@@ -666,6 +666,7 @@
           <option value="all">全部类型 (all)</option>
           <option value="compact">压缩轮次 (compact)</option>
           <option value="internal_subcall">内部子调用</option>
+          <option value="non_generate">非生成调用</option>
         </select>
 
         <!-- Model filter -->
@@ -976,6 +977,7 @@
       // State
       const state = {
         authKey: "",
+        authBlocked: false,
         status: null,
         summary: null,
         recordsTotal: 0,
@@ -1128,12 +1130,19 @@
       }
 
       async function apiFetch(path, options = {}) {
+        if (!state.authKey || state.authBlocked) {
+          openAuthModal("请输入有效的管理密钥后连接");
+          throw new Error("Management authentication required");
+        }
         options.headers = Object.assign({}, getAuthHeaders(), options.headers || {});
         try {
           const resp = await fetch(path, options);
-          if (resp.status === 401) {
-            openAuthModal("管理凭据失效或未配置，请重新输入");
-            throw new Error("HTTP 401 Unauthorized");
+          if (resp.status === 401 || resp.status === 403) {
+            state.authBlocked = true;
+            stopAutoRefresh();
+            const detail = await resp.json().catch(() => ({}));
+            openAuthModal(detail.error || "管理认证失败，请检查密钥后重新连接");
+            throw new Error("HTTP " + resp.status + " Management authentication failed");
           }
           return resp;
         } catch (e) {
@@ -1317,10 +1326,16 @@
       function formatMissReason(reason) {
         switch (reason) {
           case "cold_start": return "❄️ 会话首轮冷启动 (Cold Start)";
+          case "prefix_modified":
           case "prefix_diverged": return "🔀 历史对话前缀发生差异 (Prefix Diverged)";
+          case "auth_switched":
           case "auth_changed": return "🔑 上游账号切换 (Auth Changed)";
+          case "system_changed":
           case "system_prompt_changed": return "📝 系统提示词变更 (System Hash Changed)";
           case "tools_changed": return "🛠️ 工具声明发生变更 (Tools Changed)";
+          case "trace_disabled": return "指纹追踪未启用";
+          case "history_shortened": return "历史对话缩短";
+          case "options_changed": return "请求参数变更";
           case "model_changed": return "🤖 模型切换 (Model Changed)";
           case "upstream_cache_miss": return "☁️ 上游提供商侧未命中或已逐出 (Upstream Miss)";
           default: return reason || "未命中";
@@ -1884,10 +1899,22 @@
             throw new Error("HTTP " + resp.status);
           }
 
-          await fetchStatus();
+          const configResp = await apiFetch("/v0/management/plugins/cpa-cache-tracker/config");
+          if (!configResp.ok) throw new Error("读取配置失败: HTTP " + configResp.status);
+          const expected = await configResp.json();
+          const deadline = Date.now() + 5000;
+          let synced = false;
+          do {
+            const active = await fetchStatus();
+            synced = active && ["trace_enabled", "retention_days", "max_disk_mb", "max_message_hashes"]
+              .every(key => expected[key] === undefined || active[key] === expected[key])
+              && active.omit_body_after === !active.trace_enabled;
+            if (synced) break;
+            await new Promise(resolve => setTimeout(resolve, 300));
+          } while (Date.now() < deadline);
           await fetchSummary();
           await fetchRecords();
-          showToast("配置已重载并与宿主进程同步！", "success");
+          showToast(synced ? "配置已重载并与宿主进程同步！" : "配置已提交，运行时同步仍在等待中", synced ? "success" : "warning");
         } catch (e) {
           showToast("重载配置异常: " + e.message, "error");
         }
@@ -1985,6 +2012,7 @@
         const input = document.getElementById("auth-key-input");
         const val = input ? input.value.trim() : "";
         state.authKey = val;
+        state.authBlocked = false;
         sessionStorage.setItem("cpa-cache-tracker-key", val);
         closeAuthModal();
         showToast("管理凭据已更新", "success");
@@ -2178,6 +2206,7 @@
 
       function startAutoRefresh() {
         stopAutoRefresh();
+        if (!state.authKey || state.authBlocked) return;
         state.autoRefreshInterval = setInterval(() => {
           fetchStatus();
           fetchSummary();
@@ -2194,7 +2223,12 @@
 
       async function initData() {
         state.authKey = resolveAuthKey();
-        await fetchStatus();
+        if (!state.authKey) {
+          stopAutoRefresh();
+          openAuthModal();
+          return;
+        }
+        if (!await fetchStatus()) return;
         await fetchSummary();
         await fetchRecords();
         startAutoRefresh();

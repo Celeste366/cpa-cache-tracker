@@ -91,17 +91,17 @@ func NormalizeUsage(u abi.UsageRecord, toFormat string) NormalizedTokens {
 }
 
 func classifySemantics(u abi.UsageRecord, toFormat string, rawInput, cacheRead, cacheWrite, output int64) string {
-	executor := strings.ToLower(u.ExecutorType)
-	provider := strings.ToLower(u.Provider)
-	targetFormat := strings.ToLower(toFormat)
+	executor := strings.ToLower(strings.TrimSpace(u.ExecutorType))
+	provider := strings.ToLower(strings.TrimSpace(u.Provider))
+	targetFormat := strings.ToLower(strings.TrimSpace(toFormat))
 
 	// 1. If ExecutorType == "OpenAICompatExecutor" (case-insensitive) or strings.HasPrefix(lower(Provider), "openai-compatible-"): "subset".
 	if executor == "openaicompatexecutor" || strings.HasPrefix(provider, "openai-compatible-") {
 		return SemanticsSubset
 	}
 
-	// 2. Else if lower(Provider) == "workbuddy": "subset".
-	if provider == "workbuddy" {
+	// 2. Else if Provider or ExecutorType contains "workbuddy": "subset".
+	if strings.Contains(provider, "workbuddy") || strings.Contains(executor, "workbuddy") {
 		return SemanticsSubset
 	}
 

@@ -295,20 +295,22 @@ func (d *Dispatcher) handleUsage(reqBytes []byte) ([]byte, error) {
 	tokens := tracker.NormalizeUsage(u, toFormat)
 
 	rec := tracker.Record{
-		Timestamp:    now,
-		TraceID:      u.TraceID,
-		RequestID:    u.RequestID,
-		Provider:     u.Provider,
-		ExecutorType: u.ExecutorType,
-		Model:        u.Model,
-		Alias:        u.Alias,
-		AuthID:       u.AuthID,
-		Stream:       u.Stream,
-		Failed:       u.Failed,
-		LatencyMs:    u.Latency.Milliseconds(),
-		TTFTMs:       u.TTFT.Milliseconds(),
-		Tokens:       tokens,
-		TraceEnabled: traceEnabled,
+		Timestamp:       now,
+		TraceID:         u.TraceID,
+		RequestID:       u.RequestID,
+		Provider:        u.Provider,
+		ExecutorType:    u.ExecutorType,
+		Model:           u.Model,
+		Alias:           u.Alias,
+		AuthID:          u.AuthID,
+		SessionID:       u.SessionID,
+		ParentSessionID: u.ParentSessionID,
+		Stream:          u.Stream,
+		Failed:          u.Failed,
+		LatencyMs:       u.Latency.Milliseconds(),
+		TTFTMs:          u.TTFT.Milliseconds(),
+		Tokens:          tokens,
+		TraceEnabled:    traceEnabled,
 	}
 
 	if u.Failed {
@@ -333,8 +335,12 @@ func (d *Dispatcher) handleUsage(reqBytes []byte) ([]byte, error) {
 		if rec.Model == "" {
 			rec.Model = att.Model
 		}
-		rec.SessionID = att.CanonicalSessionID
-		rec.ParentSessionID = att.ParentSessionID
+		if att.CanonicalSessionID != "" {
+			rec.SessionID = att.CanonicalSessionID
+		}
+		if att.ParentSessionID != "" {
+			rec.ParentSessionID = att.ParentSessionID
+		}
 		rec.LCPAffinitySessionID = att.LCPAffinitySessionID
 		rec.IsFork = att.IsFork
 		rec.IsCompaction = att.IsCompaction
@@ -346,6 +352,10 @@ func (d *Dispatcher) handleUsage(reqBytes []byte) ([]byte, error) {
 		}
 	} else {
 		rec.RecordKind = "main"
+	}
+
+	if !u.Generate && rec.RecordKind == "main" {
+		rec.RecordKind = "non_generate"
 	}
 
 	if _, err := store.Append(rec); err != nil {
@@ -407,7 +417,7 @@ func (d *Dispatcher) buildRegistrationLocked() abi.Registration {
 		SchemaVersion: abi.SchemaVersion,
 		Metadata: abi.Metadata{
 			Name:             "cpa-cache-tracker",
-			Version:          "0.1.0",
+			Version:          "0.1.1",
 			Author:           "Celeste366",
 			GitHubRepository: "https://github.com/Celeste366/cpa-cache-tracker",
 			Logo:             "",
