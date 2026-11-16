@@ -142,25 +142,23 @@ func Extract(sourceFormat, toFormat string, body []byte, maxMsgHashes int) Resul
 	return res
 }
 
+func hasOpenAISystemRole(msgs []any) bool {
+	for _, item := range msgs {
+		if m, ok := item.(map[string]any); ok {
+			if role, _ := m["role"].(string); role == "system" || role == "developer" {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 func detectProtocol(sourceFormat, toFormat string, root map[string]any) string {
 	sf := strings.ToLower(strings.TrimSpace(sourceFormat))
 	tf := strings.ToLower(strings.TrimSpace(toFormat))
 
-	// Format hint checks
-	if strings.Contains(tf, "gemini") || strings.Contains(tf, "antigravity") ||
-		strings.Contains(sf, "gemini") || strings.Contains(sf, "antigravity") {
-		return ProtocolGeminiContents
-	}
-	if strings.Contains(tf, "response") || strings.Contains(tf, "codex") ||
-		strings.Contains(sf, "response") || strings.Contains(sf, "codex") {
-		return ProtocolOpenAIResponses
-	}
-	if strings.Contains(tf, "claude") || strings.Contains(tf, "anthropic") ||
-		strings.Contains(sf, "claude") || strings.Contains(sf, "anthropic") {
-		return ProtocolClaudeMessages
-	}
-
-	// Payload shape checks
+	// 1. Structural shape checks (must take precedence over format hints)
+	// Gemini: contents or request.contents / request.system_instruction
 	if _, ok := root["contents"]; ok {
 		return ProtocolGeminiContents
 	}
@@ -176,11 +174,14 @@ func detectProtocol(sourceFormat, toFormat string, root map[string]any) string {
 		}
 	}
 
+	// OpenAI Responses / Codex: input
 	if _, ok := root["input"]; ok {
 		return ProtocolOpenAIResponses
 	}
 
-	if _, ok := root["messages"]; ok {
+	// Messages payload: Claude Messages vs OpenAI Chat
+	if msgsRaw, ok := root["messages"].([]any); ok {
+		// Claude structural markers: top-level system, thinking, or anthropic_version
 		if _, okSys := root["system"]; okSys {
 			return ProtocolClaudeMessages
 		}
@@ -190,11 +191,48 @@ func detectProtocol(sourceFormat, toFormat string, root map[string]any) string {
 		if _, okAnthropic := root["anthropic_version"]; okAnthropic {
 			return ProtocolClaudeMessages
 		}
+
+		// OpenAI structural markers: leading/embedded system or developer messages
+		if hasOpenAISystemRole(msgsRaw) {
+			return ProtocolOpenAIChat
+		}
+
+		// Shape is ambiguous (e.g. messages with only user/assistant roles).
+		// Break ties with format hints (preferring sourceFormat first).
+		if strings.Contains(sf, "claude") || strings.Contains(sf, "anthropic") {
+			return ProtocolClaudeMessages
+		}
+		if strings.Contains(sf, "openai") || strings.Contains(sf, "chat") {
+			return ProtocolOpenAIChat
+		}
+		if strings.Contains(tf, "claude") || strings.Contains(tf, "anthropic") {
+			return ProtocolClaudeMessages
+		}
+		if strings.Contains(tf, "openai") || strings.Contains(tf, "chat") {
+			return ProtocolOpenAIChat
+		}
+
+		// Default for messages payload
 		return ProtocolOpenAIChat
 	}
 
-	if strings.Contains(tf, "openai") || strings.Contains(sf, "openai") {
-		return ProtocolOpenAIChat
+	// 2. Fallback to format hints when shape has no contents/input/messages
+	for _, hint := range []string{sf, tf} {
+		if hint == "" {
+			continue
+		}
+		if strings.Contains(hint, "gemini") || strings.Contains(hint, "antigravity") {
+			return ProtocolGeminiContents
+		}
+		if strings.Contains(hint, "response") || strings.Contains(hint, "codex") {
+			return ProtocolOpenAIResponses
+		}
+		if strings.Contains(hint, "claude") || strings.Contains(hint, "anthropic") {
+			return ProtocolClaudeMessages
+		}
+		if strings.Contains(hint, "openai") || strings.Contains(hint, "chat") {
+			return ProtocolOpenAIChat
+		}
 	}
 
 	return ProtocolUnknown

@@ -633,3 +633,66 @@ func TestExtractEdgeCases(t *testing.T) {
 		t.Errorf("expected ParseSkipped = true for top-level JSON string")
 	}
 }
+
+func TestExtractCrossProtocolPrecedence(t *testing.T) {
+	// 1. sourceFormat="claude", toFormat="codex" with Claude payload (top-level system + messages)
+	// Must extract as claude_messages, NOT misroute to openai_responses
+	claudeBody, _ := json.Marshal(map[string]any{
+		"model":  "claude-3-7-sonnet",
+		"system": "You are Claude acting in a proxy.",
+		"messages": []any{
+			map[string]any{"role": "user", "content": "Hello from Claude"},
+			map[string]any{"role": "assistant", "content": "Hello user"},
+		},
+	})
+	res1 := fingerprint.Extract("claude", "codex", claudeBody, 512)
+	if res1.Protocol != fingerprint.ProtocolClaudeMessages {
+		t.Fatalf("expected protocol %q, got %q (misrouted by toFormat hint)", fingerprint.ProtocolClaudeMessages, res1.Protocol)
+	}
+	if len(res1.SystemHash) != 32 {
+		t.Errorf("expected 32-char SystemHash for Claude system, got %q", res1.SystemHash)
+	}
+	if res1.MessageCount != 2 {
+		t.Errorf("expected MessageCount 2, got %d", res1.MessageCount)
+	}
+
+	// 2. sourceFormat="claude", toFormat="openai" with already-translated OpenAI payload (messages with role: "system")
+	// Must extract as openai_chat, NOT misroute to claude_messages
+	openaiBody, _ := json.Marshal(map[string]any{
+		"model": "gpt-4o",
+		"messages": []any{
+			map[string]any{"role": "system", "content": "You are a converted OpenAI assistant."},
+			map[string]any{"role": "user", "content": "Hello OpenAI"},
+		},
+	})
+	res2 := fingerprint.Extract("claude", "openai", openaiBody, 512)
+	if res2.Protocol != fingerprint.ProtocolOpenAIChat {
+		t.Fatalf("expected protocol %q, got %q (misrouted by sourceFormat hint)", fingerprint.ProtocolOpenAIChat, res2.Protocol)
+	}
+	if len(res2.SystemHash) != 32 {
+		t.Errorf("expected 32-char SystemHash from OpenAI leading system message, got %q", res2.SystemHash)
+	}
+	if res2.MessageCount != 1 {
+		t.Errorf("expected MessageCount 1 (excluding leading system), got %d", res2.MessageCount)
+	}
+
+	// 3. sourceFormat="openai", toFormat="gemini" with OpenAI payload
+	// Must extract as openai_chat, NOT misroute to gemini_contents
+	openaiBodyDev, _ := json.Marshal(map[string]any{
+		"model": "gpt-4o",
+		"messages": []any{
+			map[string]any{"role": "developer", "content": "Developer instructions."},
+			map[string]any{"role": "user", "content": "Hello from developer chat"},
+		},
+	})
+	res3 := fingerprint.Extract("openai", "gemini", openaiBodyDev, 512)
+	if res3.Protocol != fingerprint.ProtocolOpenAIChat {
+		t.Fatalf("expected protocol %q, got %q (misrouted by toFormat hint)", fingerprint.ProtocolOpenAIChat, res3.Protocol)
+	}
+	if len(res3.SystemHash) != 32 {
+		t.Errorf("expected 32-char SystemHash from leading developer message, got %q", res3.SystemHash)
+	}
+	if res3.MessageCount != 1 {
+		t.Errorf("expected MessageCount 1, got %d", res3.MessageCount)
+	}
+}
