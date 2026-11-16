@@ -278,6 +278,35 @@ type Metadata struct {
 	ConfigFields     []ConfigField `json:"config_fields,omitempty"`
 }
 
+// MarshalJSON ensures both snake_case and PascalCase keys are present for CPA host compatibility.
+func (m Metadata) MarshalJSON() ([]byte, error) {
+	type Alias Metadata
+	return json.Marshal(&struct {
+		Alias
+		GitHubRepoPascal string `json:"GitHubRepository,omitempty"`
+	}{
+		Alias:            Alias(m),
+		GitHubRepoPascal: m.GitHubRepository,
+	})
+}
+
+// UnmarshalJSON accepts either snake_case or PascalCase keys.
+func (m *Metadata) UnmarshalJSON(data []byte) error {
+	type Alias Metadata
+	var aux struct {
+		Alias
+		GitHubRepoPascal string `json:"GitHubRepository,omitempty"`
+	}
+	if err := json.Unmarshal(data, &aux); err != nil {
+		return err
+	}
+	*m = Metadata(aux.Alias)
+	if m.GitHubRepository == "" && aux.GitHubRepoPascal != "" {
+		m.GitHubRepository = aux.GitHubRepoPascal
+	}
+	return nil
+}
+
 // ConfigFieldType classifies plugin-owned configuration values.
 type ConfigFieldType string
 
