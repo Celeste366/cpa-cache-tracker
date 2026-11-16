@@ -35,6 +35,7 @@ import "C"
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -81,6 +82,28 @@ func (d *Dispatcher) now() time.Time {
 		return d.nowFn()
 	}
 	return time.Now()
+}
+
+// Store returns the current underlying Store (nil if uninitialized or closed).
+func (d *Dispatcher) Store() *storage.Store {
+	d.mu.RLock()
+	defer d.mu.RUnlock()
+	return d.store
+}
+
+// DispatchWithRecover executes dispatcher.HandleCall with a panic recovery guard,
+// returning an error envelope if a panic occurs. Pure Go for unit testing.
+func DispatchWithRecover(d *Dispatcher, method string, request []byte) (resp []byte, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("panic in %s: %v", method, r)
+			resp = abi.ErrorEnvelope("plugin_panic", err.Error())
+		}
+	}()
+	if d == nil {
+		return abi.ErrorEnvelope("dispatcher_nil", "dispatcher is nil"), nil
+	}
+	return d.HandleCall(method, request)
 }
 
 // HandleCall dispatches an incoming CPA RPC method invocation across the Go ABI.
@@ -138,6 +161,7 @@ func (d *Dispatcher) handleRegister(reqBytes []byte) ([]byte, error) {
 	if d.store != nil {
 		_ = d.store.Close()
 		d.store = nil
+		d.uiHandler = nil
 	}
 
 	store, err := storage.Open(resolvedDir, cfg, d.now)
@@ -188,6 +212,8 @@ func (d *Dispatcher) handleReconfigure(reqBytes []byte) ([]byte, error) {
 		})
 	} else if d.dataDir != resolvedDir {
 		_ = d.store.Close()
+		d.store = nil
+		d.uiHandler = nil
 		store, err := storage.Open(resolvedDir, cfg, d.now)
 		if err != nil {
 			return abi.ErrorEnvelope("storage_error", "failed to reopen storage: "+err.Error()), nil
@@ -287,6 +313,9 @@ func (d *Dispatcher) handleUsage(reqBytes []byte) ([]byte, error) {
 
 	if u.Failed {
 		rec.StatusCode = u.Failure.StatusCode
+		if rec.StatusCode == 0 {
+			rec.StatusCode = 500
+		}
 	} else {
 		rec.StatusCode = 200
 	}
@@ -451,7 +480,12 @@ func resolveDataDir(dir string) string {
 func main() {}
 
 //export cliproxy_plugin_init
-func cliproxy_plugin_init(_ *C.cliproxy_host_api, plugin *C.cliproxy_plugin_api) C.int {
+func cliproxy_plugin_init(_ *C.cliproxy_host_api, plugin *C.cliproxy_plugin_api) (rc C.int) {
+	defer func() {
+		if r := recover(); r != nil {
+			rc = 1
+		}
+	}()
 	if plugin == nil {
 		return 1
 	}
@@ -463,7 +497,19 @@ func cliproxy_plugin_init(_ *C.cliproxy_host_api, plugin *C.cliproxy_plugin_api)
 }
 
 //export cliproxyPluginCall
-func cliproxyPluginCall(method *C.char, request *C.uint8_t, requestLen C.size_t, response *C.cliproxy_buffer) C.int {
+func cliproxyPluginCall(method *C.char, request *C.uint8_t, requestLen C.size_t, response *C.cliproxy_buffer) (rc C.int) {
+	methodStr := "<nil>"
+	if method != nil {
+		methodStr = C.GoString(method)
+	}
+
+	defer func() {
+		if r := recover(); r != nil {
+			rc = 1
+			writeResponse(response, abi.ErrorEnvelope("plugin_panic", fmt.Sprintf("panic in %s: %v", methodStr, r)))
+		}
+	}()
+
 	if response != nil {
 		response.ptr = nil
 		response.len = 0
@@ -476,7 +522,7 @@ func cliproxyPluginCall(method *C.char, request *C.uint8_t, requestLen C.size_t,
 	if request != nil && requestLen > 0 {
 		requestBytes = C.GoBytes(unsafe.Pointer(request), C.int(requestLen))
 	}
-	raw, errHandle := defaultDispatcher.HandleCall(C.GoString(method), requestBytes)
+	raw, errHandle := DispatchWithRecover(defaultDispatcher, methodStr, requestBytes)
 	if errHandle != nil {
 		writeResponse(response, abi.ErrorEnvelope("plugin_error", errHandle.Error()))
 		return 1
@@ -487,6 +533,9 @@ func cliproxyPluginCall(method *C.char, request *C.uint8_t, requestLen C.size_t,
 
 //export cliproxyPluginFree
 func cliproxyPluginFree(ptr unsafe.Pointer, len C.size_t) {
+	defer func() {
+		_ = recover()
+	}()
 	if ptr != nil {
 		C.free(ptr)
 	}
@@ -495,10 +544,16 @@ func cliproxyPluginFree(ptr unsafe.Pointer, len C.size_t) {
 
 //export cliproxyPluginShutdown
 func cliproxyPluginShutdown() {
-	_, _ = defaultDispatcher.HandleCall(abi.MethodPluginShutdown, nil)
+	defer func() {
+		_ = recover()
+	}()
+	_, _ = DispatchWithRecover(defaultDispatcher, abi.MethodPluginShutdown, nil)
 }
 
 func writeResponse(response *C.cliproxy_buffer, raw []byte) {
+	defer func() {
+		_ = recover()
+	}()
 	if response == nil || len(raw) == 0 {
 		return
 	}

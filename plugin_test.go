@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"os"
+	"path/filepath"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -697,5 +700,211 @@ max_message_hashes: 512
 	}
 	if !hostReg.Capabilities.RequestInterceptor || !hostReg.Capabilities.UsagePlugin || !hostReg.Capabilities.ManagementAPI {
 		t.Errorf("Capabilities incomplete: %+v", hostReg.Capabilities)
+	}
+}
+
+func TestDispatchWithRecoverPanicGuard(t *testing.T) {
+	// 1. Nil dispatcher returns dispatcher_nil error envelope without panicking
+	respBytes, err := main.DispatchWithRecover(nil, "some.method", nil)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	var env abi.Envelope
+	if err := json.Unmarshal(respBytes, &env); err != nil {
+		t.Fatalf("unmarshal failed: %v", err)
+	}
+	if env.OK || env.Error == nil || env.Error.Code != "dispatcher_nil" {
+		t.Errorf("expected dispatcher_nil envelope, got %+v", env)
+	}
+
+	// 2. Dispatcher with simulated panic in nowFn during execution is recovered
+	tempDir := t.TempDir()
+	d := main.NewDispatcher()
+	regBytes, _ := json.Marshal(abi.LifecycleRequest{
+		ConfigYAML:    []byte(fmt.Sprintf("data_dir: %q\n", tempDir)),
+		SchemaVersion: 10,
+	})
+	if _, err := d.HandleCall(abi.MethodPluginRegister, regBytes); err != nil {
+		t.Fatalf("register failed: %v", err)
+	}
+
+	d.SetNowFn(func() time.Time {
+		panic("simulated clock panic")
+	})
+
+	reqBytes, _ := json.Marshal(abi.RequestInterceptRequest{
+		RequestID: "req-panic",
+		TraceID:   "trace-panic",
+	})
+	respBytes2, err2 := main.DispatchWithRecover(d, abi.MethodRequestInterceptAfter, reqBytes)
+	if err2 == nil {
+		t.Fatalf("expected error from panic, got nil")
+	}
+	var env2 abi.Envelope
+	if err := json.Unmarshal(respBytes2, &env2); err != nil {
+		t.Fatalf("unmarshal failed: %v", err)
+	}
+	if env2.OK || env2.Error == nil || env2.Error.Code != "plugin_panic" {
+		t.Errorf("expected plugin_panic error code, got %+v", env2)
+	}
+	if !strings.Contains(env2.Error.Message, "simulated clock panic") {
+		t.Errorf("expected panic message in error, got %s", env2.Error.Message)
+	}
+}
+
+func TestReconfigureInvalidDataDirClearsStore(t *testing.T) {
+	tempDir := t.TempDir()
+	validDir := filepath.Join(tempDir, "valid_data")
+	d := main.NewDispatcher()
+
+	regConfigYAML := fmt.Sprintf(`
+data_dir: %q
+trace_enabled: true
+retention_days: 14
+max_disk_mb: 200
+max_message_hashes: 512
+`, validDir)
+
+	regReqBytes, _ := json.Marshal(abi.LifecycleRequest{
+		ConfigYAML:    []byte(regConfigYAML),
+		SchemaVersion: 10,
+	})
+
+	regRespBytes, err := d.HandleCall(abi.MethodPluginRegister, regReqBytes)
+	if err != nil {
+		t.Fatalf("register failed: %v", err)
+	}
+	var regEnv abi.Envelope
+	json.Unmarshal(regRespBytes, &regEnv)
+	if !regEnv.OK {
+		t.Fatalf("register not OK: %+v", regEnv.Error)
+	}
+	if d.Store() == nil {
+		t.Fatalf("expected store to be initialized after register")
+	}
+
+	// Create a regular file that will collide with MkdirAll on reconfigure
+	invalidDirAsFile := filepath.Join(tempDir, "colliding_file")
+	if err := os.WriteFile(invalidDirAsFile, []byte("i am a file"), 0600); err != nil {
+		t.Fatalf("failed to create colliding file: %v", err)
+	}
+	// Try to create a nested directory under this regular file -> os.MkdirAll will fail!
+	invalidDir := filepath.Join(invalidDirAsFile, "nested_dir")
+
+	reconfConfigYAML := fmt.Sprintf(`
+data_dir: %q
+trace_enabled: true
+retention_days: 14
+max_disk_mb: 200
+max_message_hashes: 512
+`, invalidDir)
+
+	reconfReqBytes, _ := json.Marshal(abi.LifecycleRequest{
+		ConfigYAML:    []byte(reconfConfigYAML),
+		SchemaVersion: 10,
+	})
+
+	reconfRespBytes, err := d.HandleCall(abi.MethodPluginReconfigure, reconfReqBytes)
+	if err != nil {
+		t.Fatalf("reconfigure returned Go error: %v", err)
+	}
+	var reconfEnv abi.Envelope
+	json.Unmarshal(reconfRespBytes, &reconfEnv)
+	if reconfEnv.OK {
+		t.Fatalf("expected reconfigure to fail on invalid data_dir, but got OK")
+	}
+	if reconfEnv.Error == nil || reconfEnv.Error.Code != "storage_error" {
+		t.Fatalf("expected storage_error code, got %+v", reconfEnv.Error)
+	}
+
+	// CRITICAL ASSERTION: d.Store() must be nil (no stale pointer to closed store)
+	if d.Store() != nil {
+		t.Errorf("expected d.Store() == nil after failed reconfigure, but got non-nil pointer")
+	}
+
+	// Subsequent calls must fail gracefully without panicking
+	usageBytes, _ := json.Marshal(abi.UsageRecord{
+		RequestID: "req-fail",
+		TraceID:   "trace-fail",
+		Detail:    abi.UsageDetail{InputTokens: 10},
+	})
+	usageRespBytes, err := d.HandleCall(abi.MethodUsageHandle, usageBytes)
+	if err != nil {
+		t.Fatalf("usage.handle returned unexpected Go error: %v", err)
+	}
+	var usageEnv abi.Envelope
+	json.Unmarshal(usageRespBytes, &usageEnv)
+	if usageEnv.OK || usageEnv.Error == nil || usageEnv.Error.Code != "store_unavailable" {
+		t.Errorf("expected store_unavailable error envelope, got %+v", usageEnv)
+	}
+
+	mgmtBytes, _ := json.Marshal(abi.ManagementRequest{
+		Method: "GET",
+		Path:   "/v0/management/plugins/cpa-cache-tracker/status",
+	})
+	mgmtRespBytes, err := d.HandleCall(abi.MethodManagementHandle, mgmtBytes)
+	if err != nil {
+		t.Fatalf("management.handle returned unexpected Go error: %v", err)
+	}
+	var mgmtEnv abi.Envelope
+	json.Unmarshal(mgmtRespBytes, &mgmtEnv)
+	if mgmtEnv.OK || mgmtEnv.Error == nil || mgmtEnv.Error.Code != "ui_unavailable" {
+		t.Errorf("expected ui_unavailable error envelope, got %+v", mgmtEnv)
+	}
+}
+
+func TestUsageFailedDefaultStatusCode500(t *testing.T) {
+	tempDir := t.TempDir()
+	d := main.NewDispatcher()
+
+	regConfigYAML := fmt.Sprintf(`
+data_dir: %q
+trace_enabled: true
+retention_days: 14
+max_disk_mb: 200
+max_message_hashes: 512
+`, tempDir)
+
+	regReqBytes, _ := json.Marshal(abi.LifecycleRequest{
+		ConfigYAML:    []byte(regConfigYAML),
+		SchemaVersion: 10,
+	})
+	if _, err := d.HandleCall(abi.MethodPluginRegister, regReqBytes); err != nil {
+		t.Fatalf("register failed: %v", err)
+	}
+
+	// Intercept
+	interceptBytes, _ := json.Marshal(abi.RequestInterceptRequest{
+		RequestID: "req-err-zero",
+		TraceID:   "trace-err-zero",
+		Model:     "gpt-4o",
+	})
+	d.HandleCall(abi.MethodRequestInterceptAfter, interceptBytes)
+
+	// Usage with Failed: true and StatusCode: 0 (unspecified)
+	usageBytes, _ := json.Marshal(abi.UsageRecord{
+		RequestID: "req-err-zero",
+		TraceID:   "trace-err-zero",
+		Model:     "gpt-4o",
+		Failed:    true,
+		Failure:   abi.UsageFailure{StatusCode: 0, Body: "upstream connection dropped"},
+		Detail:    abi.UsageDetail{InputTokens: 50},
+	})
+	d.HandleCall(abi.MethodUsageHandle, usageBytes)
+
+	// Fetch record and assert StatusCode was defaulted to 500
+	recordsResp := callManagement(t, d, http.MethodGet, "/v0/management/plugins/cpa-cache-tracker/records?limit=1", nil)
+	var recs storage.RecordsResponse
+	if err := json.Unmarshal(recordsResp.Body, &recs); err != nil {
+		t.Fatalf("unmarshal records failed: %v", err)
+	}
+	if len(recs.Items) != 1 {
+		t.Fatalf("expected 1 record, got %d", len(recs.Items))
+	}
+	if recs.Items[0].StatusCode != 500 {
+		t.Errorf("expected StatusCode 500 when failure StatusCode was 0, got %d", recs.Items[0].StatusCode)
+	}
+	if !recs.Items[0].Failed {
+		t.Errorf("expected Failed == true")
 	}
 }

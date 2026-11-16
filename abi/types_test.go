@@ -261,3 +261,46 @@ func TestManagementTypes(t *testing.T) {
 		t.Fatalf("unexpected resources: %+v", resp2.Resources)
 	}
 }
+
+func TestMetadataJSONCompatibility(t *testing.T) {
+	// Verify marshaling includes both github_repository and GitHubRepository
+	meta := Metadata{
+		Name:             "cpa-cache-tracker",
+		Version:          "0.1.0",
+		Author:           "Celeste366",
+		GitHubRepository: "https://github.com/Celeste366/cpa-cache-tracker",
+		Logo:             "https://example.com/logo.png",
+	}
+
+	b, err := json.Marshal(meta)
+	if err != nil {
+		t.Fatalf("marshal failed: %v", err)
+	}
+	s := string(b)
+	if !strings.Contains(s, `"github_repository":"https://github.com/Celeste366/cpa-cache-tracker"`) {
+		t.Errorf("missing snake_case github_repository in: %s", s)
+	}
+	if !strings.Contains(s, `"GitHubRepository":"https://github.com/Celeste366/cpa-cache-tracker"`) {
+		t.Errorf("missing PascalCase GitHubRepository in: %s", s)
+	}
+
+	// Verify unmarshaling from snake_case only
+	snakeJSON := `{"name":"test","version":"1.0","author":"a","github_repository":"https://github.com/snake/repo"}`
+	var metaSnake Metadata
+	if err := json.Unmarshal([]byte(snakeJSON), &metaSnake); err != nil {
+		t.Fatalf("unmarshal snake failed: %v", err)
+	}
+	if metaSnake.GitHubRepository != "https://github.com/snake/repo" {
+		t.Errorf("expected GitHubRepository from snake, got %s", metaSnake.GitHubRepository)
+	}
+
+	// Verify unmarshaling from PascalCase only
+	pascalJSON := `{"Name":"test","Version":"1.0","Author":"a","GitHubRepository":"https://github.com/pascal/repo"}`
+	var metaPascal Metadata
+	if err := json.Unmarshal([]byte(pascalJSON), &metaPascal); err != nil {
+		t.Fatalf("unmarshal pascal failed: %v", err)
+	}
+	if metaPascal.GitHubRepository != "https://github.com/pascal/repo" {
+		t.Errorf("expected GitHubRepository from pascal, got %s", metaPascal.GitHubRepository)
+	}
+}
