@@ -293,6 +293,7 @@ func (c *Correlator) removeAttempt(att *PendingAttempt) {
 		}
 		if len(attempts) == 0 {
 			delete(c.pendingByTrace, att.key)
+			delete(c.seqByTrace, att.key)
 		} else {
 			c.pendingByTrace[att.key] = attempts
 		}
@@ -342,10 +343,8 @@ func extractMetadata(req abi.RequestInterceptRequest) (authID, canSessID, parent
 		strings.Contains(toFormatLower, "responses/compact") ||
 		strings.Contains(sourceFormatLower, "responses/compact") ||
 		alt == "responses/compact" ||
-		strings.HasSuffix(alt, "/responses/compact") ||
-		isCompaction {
+		strings.HasSuffix(alt, "/responses/compact") {
 		recordKind = "compact"
-		isCompaction = true
 	} else {
 		recordKind = "main"
 	}

@@ -412,9 +412,10 @@ func TestCorrelatorRecordKindClassification(t *testing.T) {
 	t0 := time.Date(2026, 11, 17, 10, 0, 0, 0, time.UTC)
 
 	cases := []struct {
-		name         string
-		req          abi.RequestInterceptRequest
-		expectedKind string
+		name               string
+		req                abi.RequestInterceptRequest
+		expectedKind       string
+		expectedCompaction bool
 	}{
 		{
 			name: "internal subcall takes precedence",
@@ -469,7 +470,7 @@ func TestCorrelatorRecordKindClassification(t *testing.T) {
 			expectedKind: "compact",
 		},
 		{
-			name: "compact via is_compaction bool",
+			name: "LCP compaction hit keeps RecordKind main with IsCompaction true",
 			req: abi.RequestInterceptRequest{
 				RequestID: "r6",
 				TraceID:   "t6",
@@ -477,7 +478,8 @@ func TestCorrelatorRecordKindClassification(t *testing.T) {
 					"is_compaction": true,
 				},
 			},
-			expectedKind: "compact",
+			expectedKind:       "main",
+			expectedCompaction: true,
 		},
 		{
 			name: "standard main request",
@@ -500,6 +502,9 @@ func TestCorrelatorRecordKindClassification(t *testing.T) {
 			}
 			if att.RecordKind != tc.expectedKind {
 				t.Errorf("expected RecordKind=%q, got %q", tc.expectedKind, att.RecordKind)
+			}
+			if tc.expectedCompaction && !att.IsCompaction {
+				t.Errorf("expected IsCompaction=true for %s", tc.name)
 			}
 		})
 	}
@@ -602,4 +607,73 @@ func TestCorrelatorConcurrentAccess(t *testing.T) {
 	}
 
 	wg.Wait()
+}
+
+func TestCorrelatorSeqByTracePruning(t *testing.T) {
+	c := NewCorrelator(5, 5*time.Minute, 15*time.Second)
+	t0 := time.Date(2026, 11, 17, 10, 0, 0, 0, time.UTC)
+
+	// 1. MatchUsage prunes seqByTrace entry
+	c.RecordInterceptAfter(abi.RequestInterceptRequest{
+		RequestID: "req-seq-1",
+		TraceID:   "trace-seq-1",
+		Model:     "gpt-4o",
+	}, false, 512, t0)
+
+	if len(c.seqByTrace) != 1 {
+		t.Fatalf("expected len(seqByTrace)=1 after record, got %d", len(c.seqByTrace))
+	}
+
+	_, ok := c.MatchUsage(abi.UsageRecord{TraceID: "trace-seq-1"}, t0.Add(time.Second))
+	if !ok {
+		t.Fatalf("expected match to succeed")
+	}
+	if len(c.seqByTrace) != 0 {
+		t.Errorf("expected len(seqByTrace)=0 after MatchUsage, got %d", len(c.seqByTrace))
+	}
+
+	// 2. HandleCompletion (rejected) prunes seqByTrace entry
+	c.RecordInterceptAfter(abi.RequestInterceptRequest{
+		RequestID: "req-seq-2",
+		TraceID:   "trace-seq-2",
+		Model:     "gpt-4o",
+	}, false, 512, t0)
+
+	if len(c.seqByTrace) != 1 {
+		t.Fatalf("expected len(seqByTrace)=1, got %d", len(c.seqByTrace))
+	}
+
+	c.HandleCompletion(abi.RequestCompletion{
+		RequestID: "req-seq-2",
+		TraceID:   "trace-seq-2",
+		Outcome:   abi.RequestCompletionRejected,
+	}, t0.Add(time.Second))
+
+	if len(c.seqByTrace) != 0 {
+		t.Errorf("expected len(seqByTrace)=0 after HandleCompletion rejected, got %d", len(c.seqByTrace))
+	}
+
+	// 3. Max capacity eviction prunes seqByTrace for evicted entries
+	// Correlator maxEntries = 5. Add 8 entries.
+	for i := 0; i < 8; i++ {
+		c.RecordInterceptAfter(abi.RequestInterceptRequest{
+			RequestID: fmt.Sprintf("req-seq-evict-%d", i),
+			TraceID:   fmt.Sprintf("trace-seq-evict-%d", i),
+			Model:     "gpt-4o",
+		}, false, 512, t0.Add(time.Duration(i)*time.Second))
+	}
+
+	// seqByTrace must be bounded by active entries (5)
+	if len(c.seqByTrace) > 5 {
+		t.Errorf("expected len(seqByTrace) <= 5 after capacity eviction, got %d", len(c.seqByTrace))
+	}
+
+	// Match remaining 5 entries: seqByTrace must drop to 0
+	for i := 3; i < 8; i++ {
+		_, _ = c.MatchUsage(abi.UsageRecord{TraceID: fmt.Sprintf("trace-seq-evict-%d", i)}, t0.Add(20*time.Second))
+	}
+
+	if len(c.seqByTrace) != 0 {
+		t.Errorf("expected len(seqByTrace)=0 after all matched, got %d", len(c.seqByTrace))
+	}
 }
