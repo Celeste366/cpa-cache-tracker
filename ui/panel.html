@@ -1,0 +1,2211 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cache Tracker - CPA 缓存追踪看板</title>
+  <style>
+    :root {
+      --bg-base: #090d16;
+      --bg-surface: #111827;
+      --bg-surface-elevated: #1f2937;
+      --bg-input: #1e293b;
+      --border-subtle: #1e293b;
+      --border-normal: #374151;
+      --border-focus: #3b82f6;
+      --text-main: #f9fafb;
+      --text-muted: #9ca3af;
+      --text-dim: #6b7280;
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --primary-subtle: rgba(59, 130, 246, 0.15);
+      --success: #10b981;
+      --success-subtle: rgba(16, 185, 129, 0.15);
+      --warning: #f59e0b;
+      --warning-subtle: rgba(245, 158, 11, 0.15);
+      --danger: #ef4444;
+      --danger-subtle: rgba(239, 68, 68, 0.15);
+      --purple: #8b5cf6;
+      --purple-subtle: rgba(139, 92, 246, 0.15);
+      --radius-sm: 4px;
+      --radius-md: 6px;
+      --radius-lg: 10px;
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg-base);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-size: 13px;
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header */
+    header {
+      background-color: var(--bg-surface);
+      border-bottom: 1px solid var(--border-normal);
+      padding: 10px 20px;
+      position: sticky;
+      top: 0;
+      z-index: 40;
+    }
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .brand-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .brand-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: var(--radius-sm);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .badge-primary { background: var(--primary-subtle); color: #60a5fa; border: 1px solid rgba(96, 165, 250, 0.3); }
+    .badge-success { background: var(--success-subtle); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.3); }
+    .badge-warning { background: var(--warning-subtle); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.3); }
+    .badge-danger { background: var(--danger-subtle); color: #f87171; border: 1px solid rgba(248, 113, 113, 0.3); }
+    .badge-gray { background: rgba(156, 163, 175, 0.15); color: #9ca3af; border: 1px solid rgba(156, 163, 175, 0.3); }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .status-summary {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--bg-input);
+      padding: 5px 12px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-subtle);
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .status-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .status-item strong {
+      color: var(--text-main);
+    }
+
+    /* Switch toggle */
+    .switch-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg-surface-elevated);
+      padding: 4px 10px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-normal);
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 32px;
+      height: 18px;
+    }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #4b5563;
+      transition: .2s;
+      border-radius: 18px;
+    }
+    .slider:before {
+      position: absolute; content: ""; height: 12px; width: 12px; left: 3px; bottom: 3px;
+      background-color: white;
+      transition: .2s;
+      border-radius: 50%;
+    }
+    input:checked + .slider { background-color: var(--success); }
+    input:checked + .slider:before { transform: translateX(14px); }
+    input:disabled + .slider { opacity: 0.5; cursor: not-allowed; }
+
+    /* Buttons */
+    .btn {
+      padding: 6px 12px;
+      border-radius: var(--radius-md);
+      font-size: 12px;
+      font-weight: 500;
+      border: 1px solid var(--border-normal);
+      background: var(--bg-surface-elevated);
+      color: var(--text-main);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+      text-decoration: none;
+    }
+    .btn:hover { background: #374151; border-color: #4b5563; }
+    .btn-primary { background: var(--primary); border-color: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-hover); border-color: var(--primary-hover); }
+    .btn-danger { background: var(--danger-subtle); border-color: rgba(239, 68, 68, 0.4); color: #f87171; }
+    .btn-danger:hover { background: var(--danger); color: #fff; }
+    .btn-sm { padding: 3px 8px; font-size: 11px; }
+
+    /* Layout */
+    main {
+      flex: 1;
+      padding: 20px;
+      max-width: 1600px;
+      width: 100%;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* Filter Bar */
+    .filter-bar {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-normal);
+      border-radius: var(--radius-lg);
+      padding: 12px 16px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .filter-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .range-selector {
+      display: flex;
+      background: var(--bg-input);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+    }
+    .range-btn {
+      padding: 5px 10px;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .range-btn:hover { color: var(--text-main); }
+    .range-btn.active {
+      background: var(--primary);
+      color: #fff;
+      font-weight: 600;
+    }
+
+    select, input[type="text"], input[type="number"] {
+      background: var(--bg-input);
+      border: 1px solid var(--border-normal);
+      color: var(--text-main);
+      padding: 6px 10px;
+      border-radius: var(--radius-md);
+      font-size: 12px;
+      outline: none;
+    }
+    select:focus, input[type="text"]:focus, input[type="number"]:focus {
+      border-color: var(--border-focus);
+    }
+
+    /* KPI Cards */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+    }
+    .kpi-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-normal);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      position: relative;
+      overflow: hidden;
+    }
+    .kpi-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .kpi-value {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--text-main);
+      letter-spacing: -0.5px;
+    }
+    .kpi-sub {
+      font-size: 11px;
+      color: var(--text-dim);
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .kpi-sub-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .kpi-sub-row strong {
+      color: var(--text-muted);
+    }
+
+    /* Chart Section */
+    .chart-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-normal);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .chart-title {
+      font-size: 14px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .chart-legend {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .legend-color {
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+    }
+    .chart-wrapper {
+      position: relative;
+      width: 100%;
+      height: 260px;
+    }
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    .chart-tooltip {
+      position: absolute;
+      background: rgba(17, 24, 39, 0.95);
+      border: 1px solid var(--border-normal);
+      border-radius: var(--radius-md);
+      padding: 8px 12px;
+      font-size: 11px;
+      pointer-events: none;
+      box-shadow: var(--shadow-lg);
+      display: none;
+      z-index: 20;
+      line-height: 1.4;
+      min-width: 140px;
+    }
+
+    /* Split Section: Model Breakdown & Miss Reasons */
+    .analytics-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 16px;
+    }
+    @media (max-width: 1024px) {
+      .analytics-grid { grid-template-columns: 1fr; }
+    }
+    .panel-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-normal);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* Tables */
+    .table-responsive {
+      overflow-x: auto;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-subtle);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 12px;
+    }
+    th {
+      background: var(--bg-surface-elevated);
+      color: var(--text-muted);
+      font-weight: 600;
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border-normal);
+      white-space: nowrap;
+    }
+    td {
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border-subtle);
+      white-space: nowrap;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255, 255, 255, 0.02); }
+    .clickable-row { cursor: pointer; }
+    .clickable-row:hover td { background: rgba(59, 130, 246, 0.08); }
+    .active-row td { background: rgba(59, 130, 246, 0.15) !important; font-weight: 600; }
+
+    /* Progress bar */
+    .progress-bar-bg {
+      background: var(--bg-input);
+      border-radius: 4px;
+      height: 6px;
+      width: 100%;
+      overflow: hidden;
+      margin-top: 4px;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--primary);
+      border-radius: 4px;
+    }
+
+    /* Pagination */
+    .pagination {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* Drawer / Offcanvas */
+    .drawer-backdrop {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(2px);
+      z-index: 50;
+      display: none;
+    }
+    .drawer {
+      position: fixed;
+      top: 0; right: 0; bottom: 0;
+      width: 680px;
+      max-width: 90vw;
+      background: var(--bg-surface);
+      border-left: 1px solid var(--border-normal);
+      box-shadow: var(--shadow-lg);
+      z-index: 60;
+      display: flex;
+      flex-direction: column;
+      transform: translateX(100%);
+      transition: transform 0.25s ease-out;
+    }
+    .drawer.open { transform: translateX(0); }
+    .drawer-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-normal);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .drawer-title { font-size: 15px; font-weight: 700; color: #fff; }
+    .drawer-body {
+      padding: 20px;
+      overflow-y: auto;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Diff Components */
+    .diff-section-card {
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-normal);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .diff-section-title {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+    }
+    .diff-meta-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      font-size: 12px;
+    }
+    .diff-meta-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .diff-meta-label { color: var(--text-dim); font-size: 11px; }
+    .diff-meta-val { font-family: var(--font-mono); font-size: 12px; color: var(--text-main); word-break: break-all; }
+
+    /* Hash sequence */
+    .hash-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+    }
+    .hash-item {
+      padding: 6px 10px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      border-left: 3px solid transparent;
+    }
+    .hash-match { background: rgba(16, 185, 129, 0.08); border-left-color: var(--success); color: #34d399; }
+    .hash-diff { background: rgba(245, 158, 11, 0.12); border-left-color: var(--warning); color: #fbbf24; }
+    .hash-append { background: rgba(59, 130, 246, 0.1); border-left-color: var(--primary); color: #60a5fa; }
+
+    /* Modal */
+    .modal-backdrop {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(2px);
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-normal);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      width: 480px;
+      max-width: 90vw;
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .modal-title { font-size: 16px; font-weight: 700; color: #fff; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group label { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px; }
+
+    /* Toast */
+    .toast-container {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 110;
+      pointer-events: none;
+    }
+    .toast {
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-normal);
+      border-radius: var(--radius-md);
+      padding: 10px 16px;
+      font-size: 12px;
+      box-shadow: var(--shadow-md);
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      animation: slideIn 0.2s ease-out;
+      pointer-events: auto;
+    }
+    .toast-success { border-color: var(--success); }
+    .toast-error { border-color: var(--danger); }
+    @keyframes slideIn { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+    /* Code & Hash styling */
+    .mono { font-family: var(--font-mono); }
+    .nowrap { white-space: nowrap; }
+    .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 140px; display: inline-block; vertical-align: middle; }
+    .empty-state { text-align: center; padding: 40px; color: var(--text-dim); }
+  </style>
+</head>
+<body>
+
+  <!-- Top Header -->
+  <header>
+    <div class="header-top">
+      <div class="brand-wrap">
+        <div class="brand-title">
+          <span>⚡ Cache Tracker</span>
+          <span class="badge badge-primary">cpa-cache-tracker</span>
+        </div>
+
+        <!-- Tracing Switch (Approach B) -->
+        <label class="switch-container" title="切换运行时请求指纹提取与前缀追踪">
+          <span>追踪指纹 (trace_enabled)</span>
+          <div class="switch">
+            <input type="checkbox" id="trace-toggle">
+            <span class="slider"></span>
+          </div>
+          <span id="trace-status-text" class="badge badge-gray">加载中...</span>
+        </label>
+      </div>
+
+      <div class="header-actions">
+        <!-- Live Status Indicators -->
+        <div class="status-summary" id="status-summary">
+          <div class="status-item" title="CPA请求拦截挂载状态：未开启追踪时将零拷贝忽略Body">
+            <span>挂载状态:</span>
+            <strong id="stat-omit-body">-</strong>
+          </div>
+          <div class="status-item" title="磁盘占用 / 上限">
+            <span>存储:</span>
+            <strong id="stat-disk-usage">-</strong>
+          </div>
+          <div class="status-item" title="记录数与持久化文件数">
+            <span>记录:</span>
+            <strong id="stat-record-count">-</strong>
+          </div>
+        </div>
+
+        <!-- Control Buttons -->
+        <button id="reload-btn" class="btn" title="触发管理配置浅合并重载，使运行期参数与宿主同步">
+          <span>🔄 重载配置 (Reload Config)</span>
+        </button>
+
+        <button id="settings-btn" class="btn" title="设置保留周期与存储上限">
+          <span>⚙️ 设置与保留</span>
+        </button>
+
+        <button id="auth-btn" class="btn btn-sm" title="查看或更新管理密钥">
+          <span>🔑 凭据</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main>
+    <!-- Filter Bar -->
+    <section class="filter-bar">
+      <div class="filter-group">
+        <!-- Time Range Selector -->
+        <div class="range-selector" id="range-selector">
+          <button class="range-btn active" data-range="today">今日</button>
+          <button class="range-btn" data-range="yesterday">昨日</button>
+          <button class="range-btn" data-range="1h">1小时</button>
+          <button class="range-btn" data-range="24h">24小时</button>
+          <button class="range-btn" data-range="7d">7天</button>
+          <button class="range-btn" data-range="14d">14天</button>
+          <button class="range-btn" data-range="30d">30天</button>
+        </div>
+
+        <!-- Kind selector -->
+        <select id="kind-select" title="记录类型">
+          <option value="main" selected>主调用 (main)</option>
+          <option value="all">全部类型 (all)</option>
+          <option value="compact">压缩轮次 (compact)</option>
+          <option value="internal_subcall">内部子调用</option>
+        </select>
+
+        <!-- Model filter -->
+        <select id="model-select">
+          <option value="">全部模型 (All Models)</option>
+        </select>
+
+        <!-- Provider filter -->
+        <select id="provider-select">
+          <option value="">全部提供商 (All Providers)</option>
+        </select>
+
+        <!-- Status filter -->
+        <select id="status-select">
+          <option value="all">全部状态</option>
+          <option value="hit">仅命中 (Hit)</option>
+          <option value="miss">仅未命中 (Miss)</option>
+          <option value="failed">执行失败 (Failed)</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <input type="text" id="search-input" placeholder="搜索 Request/Trace/Session ID..." style="width: 220px;">
+        <label style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--text-muted);cursor:pointer;">
+          <input type="checkbox" id="autorefresh-toggle" checked>
+          <span>自动刷新 (10s)</span>
+        </label>
+        <button id="refresh-btn" class="btn btn-primary btn-sm">刷新</button>
+      </div>
+    </section>
+
+    <!-- KPI Cards Grid -->
+    <section class="kpi-grid">
+      <!-- 1. Token Hit Rate -->
+      <div class="kpi-card">
+        <div class="kpi-title">
+          <span>Token 命中率</span>
+          <span class="badge badge-primary">缓存读取占比</span>
+        </div>
+        <div class="kpi-value" id="kpi-token-hit-rate">0.0%</div>
+        <div class="kpi-sub">
+          <div class="kpi-sub-row">
+            <span>缓存读取:</span>
+            <strong id="kpi-cache-read-tokens">0</strong>
+          </div>
+          <div class="kpi-sub-row">
+            <span>有效输入:</span>
+            <strong id="kpi-effective-input-tokens">0</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Request Hit Rate -->
+      <div class="kpi-card">
+        <div class="kpi-title">
+          <span>请求命中率</span>
+          <span class="badge badge-success">Hit 请求数</span>
+        </div>
+        <div class="kpi-value" id="kpi-request-hit-rate">0.0%</div>
+        <div class="kpi-sub">
+          <div class="kpi-sub-row">
+            <span>命中请求:</span>
+            <strong id="kpi-hit-requests">0</strong>
+          </div>
+          <div class="kpi-sub-row">
+            <span>总请求数:</span>
+            <strong id="kpi-total-requests">0</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Token Breakdown -->
+      <div class="kpi-card">
+        <div class="kpi-title">
+          <span>Token 吞吐明细</span>
+          <span class="badge badge-gray">上下文记账</span>
+        </div>
+        <div class="kpi-value" id="kpi-total-tokens-short">0</div>
+        <div class="kpi-sub">
+          <div class="kpi-sub-row">
+            <span>缓存写入 (Write):</span>
+            <strong id="kpi-cache-write-tokens">0</strong>
+          </div>
+          <div class="kpi-sub-row">
+            <span>未命中输入 (Uncached):</span>
+            <strong id="kpi-uncached-tokens">0</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Cold vs Warm -->
+      <div class="kpi-card">
+        <div class="kpi-title">
+          <span>冷启动 vs 暖请求</span>
+          <span class="badge badge-warning">首轮与续接</span>
+        </div>
+        <div class="kpi-value" id="kpi-warm-hit-rate">0.0%</div>
+        <div class="kpi-sub">
+          <div class="kpi-sub-row">
+            <span>冷启动首轮:</span>
+            <strong id="kpi-cold-starts">0 (命中 0%)</strong>
+          </div>
+          <div class="kpi-sub-row">
+            <span>暖会话续接:</span>
+            <strong id="kpi-warm-requests">0</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. Latency & TTFT -->
+      <div class="kpi-card">
+        <div class="kpi-title">
+          <span>时延与首字响应</span>
+          <span class="badge badge-primary">平均响应</span>
+        </div>
+        <div class="kpi-value" id="kpi-avg-latency">0 ms</div>
+        <div class="kpi-sub">
+          <div class="kpi-sub-row">
+            <span>平均首字延迟 (TTFT):</span>
+            <strong id="kpi-avg-ttft">0 ms</strong>
+          </div>
+          <div class="kpi-sub-row">
+            <span>失败请求数:</span>
+            <strong id="kpi-failed-requests" style="color:var(--danger)">0</strong>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Trend Chart -->
+    <section class="chart-card">
+      <div class="chart-header">
+        <div class="chart-title">
+          <span>📈 命中率与请求量趋势</span>
+          <select id="chart-model-select" class="btn-sm" style="margin-left: 10px;">
+            <option value="">全部模型曲线 (Overall)</option>
+          </select>
+        </div>
+        <div class="chart-legend">
+          <div class="legend-item">
+            <span class="legend-color" style="background:#10b981;"></span>
+            <span>Token 命中率 (%)</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-color" style="background:rgba(59, 130, 246, 0.4);"></span>
+            <span>请求量 (柱状)</span>
+          </div>
+        </div>
+      </div>
+      <div class="chart-wrapper">
+        <canvas id="trend-canvas"></canvas>
+        <div id="chart-tooltip" class="chart-tooltip"></div>
+      </div>
+    </section>
+
+    <!-- Analytics Split: Model Breakdown & Miss Reasons -->
+    <section class="analytics-grid">
+      <!-- Model Breakdown Table -->
+      <div class="panel-card">
+        <div class="diff-section-title">分模型命中率统计 (点击行可筛选)</div>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>模型 (Display Model)</th>
+                <th>提供商</th>
+                <th>请求数</th>
+                <th>命中数</th>
+                <th>Token 命中率</th>
+                <th>请求命中率</th>
+                <th>缓存读取</th>
+                <th>有效输入</th>
+              </tr>
+            </thead>
+            <tbody id="models-table-body">
+              <tr><td colspan="8" class="empty-state">暂无模型数据</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Miss Reasons -->
+      <div class="panel-card">
+        <div class="diff-section-title">未命中原因归因 (Miss Reasons)</div>
+        <div id="miss-reasons-list" style="display:flex;flex-direction:column;gap:10px;">
+          <div class="empty-state">暂无未命中分析</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Request Records Table -->
+    <section class="panel-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div class="diff-section-title">请求记录与 Diff 追踪 (点击行可展开同会话对比)</div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <span style="font-size:12px;color:var(--text-dim);" id="records-total-hint">共 0 条记录</span>
+          <select id="records-limit-select" class="btn-sm">
+            <option value="25">25 条/页</option>
+            <option value="50" selected>50 条/页</option>
+            <option value="100">100 条/页</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>时间</th>
+              <th>状态</th>
+              <th>模型</th>
+              <th>会话标识 (Session Key)</th>
+              <th>缓存 Token (命中率)</th>
+              <th>耗时 (TTFT)</th>
+              <th>未命中原因</th>
+              <th>类型</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="records-table-body">
+            <tr><td colspan="9" class="empty-state">暂无请求记录</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination">
+        <button id="prev-page-btn" class="btn btn-sm" disabled>上一页</button>
+        <span id="page-info">第 1 页</span>
+        <button id="next-page-btn" class="btn btn-sm" disabled>下一页</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- Same-Session Diff Drawer -->
+  <div id="drawer-backdrop" class="drawer-backdrop"></div>
+  <aside id="diff-drawer" class="drawer">
+    <div class="drawer-header">
+      <div class="drawer-title">同会话前后轮次 Diff 诊断</div>
+      <button id="drawer-close-btn" class="btn btn-sm">✕ 关闭</button>
+    </div>
+    <div class="drawer-body" id="drawer-body">
+      <div class="empty-state">正在加载 Diff 详情...</div>
+    </div>
+  </aside>
+
+  <!-- Settings & Retention Modal -->
+  <div id="settings-modal-backdrop" class="modal-backdrop">
+    <div class="modal">
+      <div class="modal-title">⚙️ 设置与数据保留</div>
+      
+      <div class="form-group">
+        <label>保留天数 (retention_days，0 表示永久保留):</label>
+        <input type="number" id="setting-retention-days" min="0" value="14">
+      </div>
+
+      <div class="form-group">
+        <label>最大磁盘占用上限 (max_disk_mb，MB):</label>
+        <input type="number" id="setting-max-disk-mb" min="10" value="200">
+      </div>
+
+      <div class="form-group">
+        <label>最大消息哈希截断数 (max_message_hashes):</label>
+        <input type="number" id="setting-max-message-hashes" min="16" value="512">
+      </div>
+
+      <div style="border-top:1px solid var(--border-normal);padding-top:12px;margin-top:4px;">
+        <div style="font-weight:600;font-size:12px;margin-bottom:8px;color:#f87171;">数据清理操作</div>
+        <div style="display:flex;gap:10px;">
+          <button id="purge-expired-btn" class="btn btn-sm">🧹 清理过期数据</button>
+          <button id="purge-all-btn" class="btn btn-sm btn-danger">⚠️ 清空全部数据</button>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button id="settings-cancel-btn" class="btn">取消</button>
+        <button id="settings-save-btn" class="btn btn-primary">保存配置</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Auth Key Modal -->
+  <div id="auth-modal-backdrop" class="modal-backdrop">
+    <div class="modal">
+      <div class="modal-title">🔑 CPA 管理凭据设置</div>
+      <div style="font-size:12px;color:var(--text-muted);">
+        请输入 CPA 管理密钥 (Management Key)。此密钥仅保存在当前浏览器 sessionStorage 中，不会泄露或外传。
+      </div>
+      <div class="form-group">
+        <label>Management Key:</label>
+        <input type="password" id="auth-key-input" placeholder="输入 Bearer 管理密钥">
+      </div>
+      <div class="modal-actions">
+        <button id="auth-cancel-btn" class="btn">取消</button>
+        <button id="auth-save-btn" class="btn btn-primary">保存并连接</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Application Logic (Offline Pure Vanilla JS) -->
+  <script>
+    (function () {
+      "use strict";
+
+      // State
+      const state = {
+        authKey: "",
+        status: null,
+        summary: null,
+        recordsTotal: 0,
+        recordsLimit: 50,
+        recordsOffset: 0,
+        currentRange: "today",
+        currentKind: "main",
+        currentModel: "",
+        currentProvider: "",
+        currentStatus: "all",
+        searchQuery: "",
+        selectedChartModel: "",
+        autoRefreshInterval: null,
+        isPollingConfig: false,
+      };
+
+      // Helper: DOM creation without innerHTML
+      function el(tag, attrs, ...children) {
+        const element = document.createElement(tag);
+        if (attrs) {
+          for (const [k, v] of Object.entries(attrs)) {
+            if (k === "className") {
+              element.className = v;
+            } else if (k.startsWith("on") && typeof v === "function") {
+              element.addEventListener(k.slice(2).toLowerCase(), v);
+            } else if (k === "style" && typeof v === "object") {
+              Object.assign(element.style, v);
+            } else {
+              element.setAttribute(k, v);
+            }
+          }
+        }
+        for (const child of children) {
+          if (child === null || child === undefined) continue;
+          if (typeof child === "string" || typeof child === "number") {
+            element.appendChild(document.createTextNode(String(child)));
+          } else if (child instanceof Node) {
+            element.appendChild(child);
+          } else if (Array.isArray(child)) {
+            for (const c of child) {
+              if (c instanceof Node) element.appendChild(c);
+              else if (typeof c === "string" || typeof c === "number") element.appendChild(document.createTextNode(String(c)));
+            }
+          }
+        }
+        return element;
+      }
+
+      function safeSetText(id, text) {
+        const elem = document.getElementById(id);
+        if (elem) elem.textContent = text;
+      }
+
+      function showToast(msg, type) {
+        const container = document.getElementById("toast-container");
+        if (!container) return;
+        const toast = el("div", { className: "toast " + (type === "error" ? "toast-error" : "toast-success") }, msg);
+        container.appendChild(toast);
+        setTimeout(() => {
+          toast.remove();
+        }, 3500);
+      }
+
+      // Formatters
+      function formatNumber(num) {
+        if (num === null || num === undefined) return "0";
+        return Number(num).toLocaleString();
+      }
+
+      function formatShortTokens(num) {
+        if (!num) return "0";
+        if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
+        if (num >= 1000) return (num / 1000).toFixed(1) + "K";
+        return String(num);
+      }
+
+      function formatBytes(bytes) {
+        if (!bytes || bytes === 0) return "0 B";
+        const k = 1024;
+        const sizes = ["B", "KB", "MB", "GB"];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
+      }
+
+      function formatDate(isoStr) {
+        if (!isoStr) return "-";
+        const d = new Date(isoStr);
+        if (isNaN(d.getTime())) return isoStr;
+        return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + 
+               " " + (d.getMonth() + 1) + "/" + d.getDate();
+      }
+
+      // Auth Resolution
+      function resolveAuthKey() {
+        // 1. sessionStorage
+        const sKey = sessionStorage.getItem("cpa-cache-tracker-key");
+        if (sKey && sKey.trim()) return sKey.trim();
+
+        // 2. localStorage["cli-proxy-auth"]
+        const localAuth = localStorage.getItem("cli-proxy-auth");
+        if (localAuth) {
+          try {
+            if (localAuth.startsWith("enc::v1::")) {
+              const b64 = localAuth.slice("enc::v1::".length);
+              const binaryStr = atob(b64);
+              const cipherBytes = new Uint8Array(binaryStr.length);
+              for (let i = 0; i < binaryStr.length; i++) {
+                cipherBytes[i] = binaryStr.charCodeAt(i);
+              }
+              const xorKeyStr = "cli-proxy-api-webui::secure-storage|" + window.location.host + "|" + navigator.userAgent;
+              const xorKeyBytes = new TextEncoder().encode(xorKeyStr);
+              const decryptedBytes = new Uint8Array(cipherBytes.length);
+              for (let i = 0; i < cipherBytes.length; i++) {
+                decryptedBytes[i] = cipherBytes[i] ^ xorKeyBytes[i % xorKeyBytes.length];
+              }
+              const jsonStr = new TextDecoder().decode(decryptedBytes);
+              const parsed = JSON.parse(jsonStr);
+              const k = parsed?.state?.managementKey || parsed?.managementKey;
+              if (k && typeof k === "string" && k.trim()) return k.trim();
+            } else {
+              const parsed = JSON.parse(localAuth);
+              const k = parsed?.state?.managementKey || parsed?.managementKey;
+              if (k && typeof k === "string" && k.trim()) return k.trim();
+            }
+          } catch (e) {
+            console.warn("cli-proxy-auth lookup note:", e);
+          }
+        }
+
+        // 3. URL param ?key=
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlKey = urlParams.get("key");
+        if (urlKey && urlKey.trim()) {
+          const k = urlKey.trim();
+          sessionStorage.setItem("cpa-cache-tracker-key", k);
+          const cleanUrl = window.location.pathname + window.location.hash;
+          window.history.replaceState({}, document.title, cleanUrl);
+          return k;
+        }
+
+        return "";
+      }
+
+      function getAuthHeaders() {
+        const headers = {};
+        if (state.authKey) {
+          headers["Authorization"] = "Bearer " + state.authKey;
+        }
+        return headers;
+      }
+
+      async function apiFetch(path, options = {}) {
+        options.headers = Object.assign({}, getAuthHeaders(), options.headers || {});
+        try {
+          const resp = await fetch(path, options);
+          if (resp.status === 401) {
+            openAuthModal("管理凭据失效或未配置，请重新输入");
+            throw new Error("HTTP 401 Unauthorized");
+          }
+          return resp;
+        } catch (e) {
+          throw e;
+        }
+      }
+
+      // API calls
+      async function fetchStatus() {
+        try {
+          const resp = await apiFetch("/v0/management/plugins/cpa-cache-tracker/status");
+          if (!resp.ok) return null;
+          const data = await resp.json();
+          state.status = data;
+          renderStatus();
+          return data;
+        } catch (e) {
+          console.error("fetchStatus error:", e);
+          return null;
+        }
+      }
+
+      async function fetchSummary() {
+        try {
+          const params = new URLSearchParams();
+          if (state.currentRange) params.set("range", state.currentRange);
+          if (state.currentKind) params.set("kind", state.currentKind);
+          if (state.currentModel) params.set("model", state.currentModel);
+          if (state.currentProvider) params.set("provider", state.currentProvider);
+
+          const resp = await apiFetch("/v0/management/plugins/cpa-cache-tracker/summary?" + params.toString());
+          if (!resp.ok) return;
+          const data = await resp.json();
+          state.summary = data;
+          renderSummary();
+          updateFilterDropdowns();
+          drawChart();
+        } catch (e) {
+          console.error("fetchSummary error:", e);
+        }
+      }
+
+      async function fetchRecords() {
+        try {
+          const params = new URLSearchParams();
+          if (state.currentRange) params.set("range", state.currentRange);
+          if (state.currentKind) params.set("kind", state.currentKind);
+          if (state.currentModel) params.set("model", state.currentModel);
+          if (state.currentProvider) params.set("provider", state.currentProvider);
+          if (state.currentStatus && state.currentStatus !== "all") params.set("status", state.currentStatus);
+          if (state.searchQuery) params.set("q", state.searchQuery);
+          params.set("limit", String(state.recordsLimit));
+          params.set("offset", String(state.recordsOffset));
+
+          const resp = await apiFetch("/v0/management/plugins/cpa-cache-tracker/records?" + params.toString());
+          if (!resp.ok) return;
+          const data = await resp.json();
+          state.recordsTotal = data.total || 0;
+          renderRecordsTable(data.items || []);
+          renderPagination();
+        } catch (e) {
+          console.error("fetchRecords error:", e);
+        }
+      }
+
+      // UI Rendering
+      function renderStatus() {
+        if (!state.status) return;
+        const st = state.status;
+
+        // Toggle switch
+        const toggle = document.getElementById("trace-toggle");
+        const statusText = document.getElementById("trace-status-text");
+        if (toggle && !state.isPollingConfig) {
+          toggle.checked = Boolean(st.trace_enabled);
+        }
+        if (statusText) {
+          statusText.textContent = st.trace_enabled ? "ON (活动)" : "OFF (停用)";
+          statusText.className = "badge " + (st.trace_enabled ? "badge-success" : "badge-gray");
+        }
+
+        // Summary pills
+        const omitEl = document.getElementById("stat-omit-body");
+        if (omitEl) {
+          omitEl.textContent = st.omit_body_after ? "已生效零拷贝 (Omit)" : "实时全量检查 (Active)";
+          omitEl.style.color = st.omit_body_after ? "var(--warning)" : "var(--success)";
+        }
+
+        const diskEl = document.getElementById("stat-disk-usage");
+        if (diskEl) {
+          const usedStr = formatBytes(st.used_bytes || 0);
+          const maxMB = st.max_disk_mb || 200;
+          const pct = ((st.used_bytes || 0) / (maxMB * 1024 * 1024) * 100).toFixed(1);
+          diskEl.textContent = usedStr + " / " + maxMB + " MB (" + pct + "%)";
+        }
+
+        const countEl = document.getElementById("stat-record-count");
+        if (countEl) {
+          countEl.textContent = (st.record_count || 0) + " 条 (" + (st.file_count || 0) + " 文件)";
+        }
+      }
+
+      function renderSummary() {
+        if (!state.summary) return;
+        const sum = state.summary;
+        const t = sum.totals || {};
+
+        safeSetText("kpi-token-hit-rate", (t.token_hit_rate || 0).toFixed(1) + "%");
+        safeSetText("kpi-cache-read-tokens", formatNumber(t.cache_read || 0));
+        safeSetText("kpi-effective-input-tokens", formatNumber(t.effective_input || 0));
+
+        safeSetText("kpi-request-hit-rate", (t.request_hit_rate || 0).toFixed(1) + "%");
+        safeSetText("kpi-hit-requests", formatNumber(t.hit_requests || 0));
+        safeSetText("kpi-total-requests", formatNumber(t.requests || 0));
+
+        safeSetText("kpi-total-tokens-short", formatShortTokens(t.effective_input || 0));
+        safeSetText("kpi-cache-write-tokens", formatNumber(t.cache_write || 0));
+        safeSetText("kpi-uncached-tokens", formatNumber(t.uncached_input || 0));
+
+        safeSetText("kpi-warm-hit-rate", (t.warm_hit_rate || 0).toFixed(1) + "%");
+        safeSetText("kpi-cold-starts", (t.cold_starts || 0) + " (命中 " + (t.cold_hit_rate || 0).toFixed(1) + "%)");
+        safeSetText("kpi-warm-requests", formatNumber(t.warm_requests || 0));
+
+        safeSetText("kpi-avg-latency", (t.avg_latency_ms || 0).toFixed(0) + " ms");
+        safeSetText("kpi-avg-ttft", (t.avg_ttft_ms || 0).toFixed(0) + " ms");
+        safeSetText("kpi-failed-requests", formatNumber(t.failed_requests || 0));
+
+        // Model breakdown table
+        const tbody = document.getElementById("models-table-body");
+        if (tbody) {
+          while (tbody.firstChild) tbody.removeChild(tbody.firstChild);
+          if (!sum.models || sum.models.length === 0) {
+            tbody.appendChild(el("tr", null, el("td", { colSpan: 8, className: "empty-state" }, "暂无模型统计数据")));
+          } else {
+            sum.models.forEach(m => {
+              const isSelected = state.currentModel === m.display_model;
+              const row = el("tr", { 
+                className: "clickable-row " + (isSelected ? "active-row" : ""),
+                onclick: () => toggleModelFilter(m.display_model)
+              },
+                el("td", { className: "mono" }, m.display_model),
+                el("td", null, (m.providers || []).join(", ") || "-"),
+                el("td", null, formatNumber(m.requests)),
+                el("td", null, formatNumber(m.hit_requests)),
+                el("td", null, (m.token_hit_rate || 0).toFixed(1) + "%"),
+                el("td", null, (m.request_hit_rate || 0).toFixed(1) + "%"),
+                el("td", null, formatNumber(m.cache_read)),
+                el("td", null, formatNumber(m.effective_input))
+              );
+              tbody.appendChild(row);
+            });
+          }
+        }
+
+        // Miss reasons list
+        const mrContainer = document.getElementById("miss-reasons-list");
+        if (mrContainer) {
+          while (mrContainer.firstChild) mrContainer.removeChild(mrContainer.firstChild);
+          if (!sum.miss_reasons || sum.miss_reasons.length === 0) {
+            mrContainer.appendChild(el("div", { className: "empty-state" }, "全部请求已命中缓存"));
+          } else {
+            const maxCount = Math.max(...sum.miss_reasons.map(r => r.count || 1));
+            sum.miss_reasons.forEach(r => {
+              const pct = ((r.count / maxCount) * 100).toFixed(0);
+              const label = formatMissReason(r.reason);
+              const row = el("div", { style: { display: "flex", flexDirection: "column", gap: "2px" } },
+                el("div", { style: { display: "flex", justifyContent: "space-between", fontSize: "12px" } },
+                  el("span", null, label),
+                  el("strong", { className: "mono" }, r.count + " 次 (" + formatNumber(r.effective_input) + " tokens)")
+                ),
+                el("div", { className: "progress-bar-bg" },
+                  el("div", { className: "progress-bar-fill", style: { width: pct + "%" } })
+                )
+              );
+              mrContainer.appendChild(row);
+            });
+          }
+        }
+      }
+
+      function formatMissReason(reason) {
+        switch (reason) {
+          case "cold_start": return "❄️ 会话首轮冷启动 (Cold Start)";
+          case "prefix_diverged": return "🔀 历史对话前缀发生差异 (Prefix Diverged)";
+          case "auth_changed": return "🔑 上游账号切换 (Auth Changed)";
+          case "system_prompt_changed": return "📝 系统提示词变更 (System Hash Changed)";
+          case "tools_changed": return "🛠️ 工具声明发生变更 (Tools Changed)";
+          case "model_changed": return "🤖 模型切换 (Model Changed)";
+          case "upstream_cache_miss": return "☁️ 上游提供商侧未命中或已逐出 (Upstream Miss)";
+          default: return reason || "未命中";
+        }
+      }
+
+      function updateFilterDropdowns() {
+        if (!state.summary) return;
+        const sum = state.summary;
+
+        // Model Select
+        const mSelect = document.getElementById("model-select");
+        const chartMSelect = document.getElementById("chart-model-select");
+        if (mSelect) {
+          const currentVal = state.currentModel;
+          while (mSelect.options.length > 1) mSelect.remove(1);
+          (sum.available_models || []).forEach(m => {
+            const opt = document.createElement("option");
+            opt.value = m;
+            opt.textContent = m;
+            mSelect.appendChild(opt);
+          });
+          mSelect.value = currentVal;
+        }
+
+        if (chartMSelect) {
+          const curChart = state.selectedChartModel;
+          while (chartMSelect.options.length > 1) chartMSelect.remove(1);
+          (sum.available_models || []).forEach(m => {
+            const opt = document.createElement("option");
+            opt.value = m;
+            opt.textContent = m;
+            chartMSelect.appendChild(opt);
+          });
+          chartMSelect.value = curChart;
+        }
+
+        // Provider Select
+        const pSelect = document.getElementById("provider-select");
+        if (pSelect) {
+          const currentProv = state.currentProvider;
+          while (pSelect.options.length > 1) pSelect.remove(1);
+          (sum.available_providers || []).forEach(p => {
+            const opt = document.createElement("option");
+            opt.value = p;
+            opt.textContent = p;
+            pSelect.appendChild(opt);
+          });
+          pSelect.value = currentProv;
+        }
+      }
+
+      function toggleModelFilter(modelName) {
+        if (state.currentModel === modelName) {
+          state.currentModel = "";
+        } else {
+          state.currentModel = modelName;
+        }
+        const mSelect = document.getElementById("model-select");
+        if (mSelect) mSelect.value = state.currentModel;
+        state.recordsOffset = 0;
+        fetchSummary();
+        fetchRecords();
+      }
+
+      function renderRecordsTable(items) {
+        const tbody = document.getElementById("records-table-body");
+        if (!tbody) return;
+        while (tbody.firstChild) tbody.removeChild(tbody.firstChild);
+
+        if (!items || items.length === 0) {
+          tbody.appendChild(el("tr", null, el("td", { colSpan: 9, className: "empty-state" }, "未匹配到任何请求记录")));
+          return;
+        }
+
+        items.forEach(rec => {
+          const isHit = rec.tokens && (rec.tokens.request_hit || rec.tokens.cache_read > 0);
+          let statusBadge;
+          if (rec.failed) {
+            statusBadge = el("span", { className: "badge badge-danger" }, "Failed");
+          } else if (isHit) {
+            statusBadge = el("span", { className: "badge badge-success" }, "Hit");
+          } else {
+            statusBadge = el("span", { className: "badge badge-gray" }, "Miss");
+          }
+
+          const hitRate = (rec.tokens && rec.tokens.effective_input > 0)
+            ? ((rec.tokens.cache_read / rec.tokens.effective_input) * 100).toFixed(0) + "%"
+            : "-";
+
+          const sessKey = rec.effective_session_key || rec.session_id || "-";
+          const shortSess = sessKey.length > 20 ? sessKey.slice(0, 18) + "..." : sessKey;
+
+          const row = el("tr", { className: "clickable-row", onclick: () => openDiffDrawer(rec.id) },
+            el("td", null, formatDate(rec.timestamp)),
+            el("td", null, statusBadge),
+            el("td", { className: "mono" }, rec.display_model || rec.model || "-"),
+            el("td", { className: "mono truncate", title: sessKey }, shortSess),
+            el("td", null,
+              el("span", { className: "mono" }, formatNumber(rec.tokens?.cache_read || 0) + " / " + formatNumber(rec.tokens?.effective_input || 0)),
+              el("span", { style: { color: "var(--text-dim)", marginLeft: "6px" } }, "(" + hitRate + ")")
+            ),
+            el("td", null, (rec.latency_ms || 0) + " ms" + (rec.ttft_ms ? " (" + rec.ttft_ms + "ms)" : "")),
+            el("td", null, rec.miss_reason ? el("span", { className: "badge badge-warning" }, rec.miss_reason) : "-"),
+            el("td", null, el("span", { className: "badge badge-gray" }, rec.record_kind || "main")),
+            el("td", null, el("button", { 
+              className: "btn btn-sm",
+              onclick: (e) => { e.stopPropagation(); openDiffDrawer(rec.id); }
+            }, "🔍 Diff"))
+          );
+
+          tbody.appendChild(row);
+        });
+      }
+
+      function renderPagination() {
+        const total = state.recordsTotal;
+        const limit = state.recordsLimit;
+        const offset = state.recordsOffset;
+
+        safeSetText("records-total-hint", "共 " + total + " 条记录");
+
+        const curPage = Math.floor(offset / limit) + 1;
+        const totalPages = Math.ceil(total / limit) || 1;
+        safeSetText("page-info", "第 " + curPage + " / " + totalPages + " 页");
+
+        const prevBtn = document.getElementById("prev-page-btn");
+        const nextBtn = document.getElementById("next-page-btn");
+        if (prevBtn) prevBtn.disabled = (offset <= 0);
+        if (nextBtn) nextBtn.disabled = (offset + limit >= total);
+      }
+
+      // Chart Drawing Engine (Pure Canvas 2D)
+      function drawChart() {
+        const canvas = document.getElementById("trend-canvas");
+        if (!canvas) return;
+        const ctx = canvas.getContext("2d");
+        const rect = canvas.getBoundingClientRect();
+
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+        ctx.scale(dpr, dpr);
+
+        const width = rect.width;
+        const height = rect.height;
+
+        ctx.clearRect(0, 0, width, height);
+
+        let series = [];
+        if (state.selectedChartModel && state.summary?.model_series) {
+          series = state.summary.model_series.filter(s => s.display_model === state.selectedChartModel);
+        } else if (state.summary?.overall_series) {
+          series = state.summary.overall_series;
+        }
+
+        if (!series || series.length === 0) {
+          ctx.fillStyle = "#6b7280";
+          ctx.font = "13px -apple-system, sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillText("当前选定时段暂无请求时序数据", width / 2, height / 2);
+          return;
+        }
+
+        const padLeft = 45;
+        const padRight = 45;
+        const padTop = 20;
+        const padBottom = 30;
+        const chartW = width - padLeft - padRight;
+        const chartH = height - padTop - padBottom;
+
+        // Find max requests for right axis
+        let maxReq = 1;
+        series.forEach(pt => {
+          if (pt.requests > maxReq) maxReq = pt.requests;
+        });
+        maxReq = Math.ceil(maxReq * 1.15);
+
+        // Draw horizontal grid lines (0%, 25%, 50%, 75%, 100%)
+        ctx.strokeStyle = "#1f2937";
+        ctx.lineWidth = 1;
+        ctx.fillStyle = "#6b7280";
+        ctx.font = "10px -apple-system, sans-serif";
+
+        for (let i = 0; i <= 4; i++) {
+          const y = padTop + chartH - (i / 4) * chartH;
+          ctx.beginPath();
+          ctx.moveTo(padLeft, y);
+          ctx.lineTo(width - padRight, y);
+          ctx.stroke();
+
+          // Left label (% hit rate)
+          ctx.textAlign = "right";
+          ctx.fillText((i * 25) + "%", padLeft - 6, y + 3);
+
+          // Right label (request volume)
+          ctx.textAlign = "left";
+          const reqVal = Math.round((i / 4) * maxReq);
+          ctx.fillText(String(reqVal), width - padRight + 6, y + 3);
+        }
+
+        const n = series.length;
+        const stepX = n > 1 ? chartW / (n - 1) : chartW / 2;
+
+        // Draw request volume bars
+        const barWidth = Math.max(2, Math.min(24, (chartW / n) * 0.5));
+        ctx.fillStyle = "rgba(59, 130, 246, 0.25)";
+        series.forEach((pt, idx) => {
+          const x = padLeft + (n > 1 ? idx * stepX : chartW / 2) - barWidth / 2;
+          const barH = (pt.requests / maxReq) * chartH;
+          const y = padTop + chartH - barH;
+          ctx.fillRect(x, y, barWidth, barH);
+        });
+
+        // Draw Hit Rate area & line
+        ctx.beginPath();
+        series.forEach((pt, idx) => {
+          const x = padLeft + (n > 1 ? idx * stepX : chartW / 2);
+          const y = padTop + chartH - ((pt.token_hit_rate || 0) / 100) * chartH;
+          if (idx === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        });
+
+        // Stroke line
+        ctx.strokeStyle = "#10b981";
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+
+        // Fill gradient
+        const lastX = padLeft + (n > 1 ? (n - 1) * stepX : chartW / 2);
+        const firstX = padLeft + (n > 1 ? 0 : chartW / 2);
+        ctx.lineTo(lastX, padTop + chartH);
+        ctx.lineTo(firstX, padTop + chartH);
+        ctx.closePath();
+        const grad = ctx.createLinearGradient(0, padTop, 0, padTop + chartH);
+        grad.addColorStop(0, "rgba(16, 185, 129, 0.25)");
+        grad.addColorStop(1, "rgba(16, 185, 129, 0.0)");
+        ctx.fillStyle = grad;
+        ctx.fill();
+
+        // Draw points
+        series.forEach((pt, idx) => {
+          const x = padLeft + (n > 1 ? idx * stepX : chartW / 2);
+          const y = padTop + chartH - ((pt.token_hit_rate || 0) / 100) * chartH;
+          ctx.fillStyle = "#10b981";
+          ctx.beginPath();
+          ctx.arc(x, y, 3, 0, Math.PI * 2);
+          ctx.fill();
+        });
+
+        // Draw X-axis timestamps (skip crowded labels)
+        ctx.fillStyle = "#9ca3af";
+        ctx.textAlign = "center";
+        const labelInterval = Math.ceil(n / 6);
+        series.forEach((pt, idx) => {
+          if (idx % labelInterval === 0 || idx === n - 1) {
+            const x = padLeft + (n > 1 ? idx * stepX : chartW / 2);
+            const timeLabel = pt.bucket.length > 10 ? pt.bucket.slice(11) : pt.bucket;
+            ctx.fillText(timeLabel, x, height - 8);
+          }
+        });
+
+        // Store positions for hover tooltip
+        canvas._chartData = {
+          series, padLeft, padTop, chartW, chartH, stepX, n
+        };
+      }
+
+      // Chart Hover
+      const canvasEl = document.getElementById("trend-canvas");
+      const tooltipEl = document.getElementById("chart-tooltip");
+      if (canvasEl && tooltipEl) {
+        canvasEl.addEventListener("mousemove", (e) => {
+          if (!canvasEl._chartData) return;
+          const { series, padLeft, padTop, chartW, chartH, stepX, n } = canvasEl._chartData;
+          const rect = canvasEl.getBoundingClientRect();
+          const mouseX = e.clientX - rect.left;
+          const mouseY = e.clientY - rect.top;
+
+          if (mouseX < padLeft || mouseX > padLeft + chartW) {
+            tooltipEl.style.display = "none";
+            return;
+          }
+
+          let closestIdx = 0;
+          if (n > 1) {
+            closestIdx = Math.round((mouseX - padLeft) / stepX);
+            closestIdx = Math.max(0, Math.min(n - 1, closestIdx));
+          }
+
+          const pt = series[closestIdx];
+          if (!pt) return;
+
+          tooltipEl.style.display = "block";
+          tooltipEl.style.left = Math.min(rect.width - 160, Math.max(10, mouseX + 10)) + "px";
+          tooltipEl.style.top = Math.max(10, mouseY - 70) + "px";
+
+          while (tooltipEl.firstChild) tooltipEl.removeChild(tooltipEl.firstChild);
+          tooltipEl.appendChild(el("div", { style: { fontWeight: "700", marginBottom: "4px" } }, pt.bucket));
+          tooltipEl.appendChild(el("div", null, "Token 命中率: " + (pt.token_hit_rate || 0).toFixed(1) + "%"));
+          tooltipEl.appendChild(el("div", null, "请求命中率: " + (pt.request_hit_rate || 0).toFixed(1) + "%"));
+          tooltipEl.appendChild(el("div", null, "请求量: " + formatNumber(pt.requests) + " 次"));
+          tooltipEl.appendChild(el("div", null, "读取 Tokens: " + formatNumber(pt.cache_read)));
+        });
+
+        canvasEl.addEventListener("mouseleave", () => {
+          tooltipEl.style.display = "none";
+        });
+      }
+
+      // Diff Drawer
+      async function openDiffDrawer(recordId) {
+        const backdrop = document.getElementById("drawer-backdrop");
+        const drawer = document.getElementById("diff-drawer");
+        const body = document.getElementById("drawer-body");
+        if (!drawer || !body) return;
+
+        drawer.classList.add("open");
+        if (backdrop) backdrop.style.display = "block";
+
+        while (body.firstChild) body.removeChild(body.firstChild);
+        body.appendChild(el("div", { className: "empty-state" }, "正在加载 Diff 数据..."));
+
+        try {
+          const resp = await apiFetch("/v0/management/plugins/cpa-cache-tracker/records/diff?id=" + encodeURIComponent(recordId));
+          if (!resp.ok) {
+            body.appendChild(el("div", { className: "badge badge-danger" }, "加载 Diff 失败 (HTTP " + resp.status + ")"));
+            return;
+          }
+          const diffData = await resp.json();
+          renderDiffContent(body, diffData);
+        } catch (e) {
+          while (body.firstChild) body.removeChild(body.firstChild);
+          body.appendChild(el("div", { className: "badge badge-danger" }, "Diff 请求异常: " + e.message));
+        }
+      }
+
+      function closeDiffDrawer() {
+        const backdrop = document.getElementById("drawer-backdrop");
+        const drawer = document.getElementById("diff-drawer");
+        if (drawer) drawer.classList.remove("open");
+        if (backdrop) backdrop.style.display = "none";
+      }
+
+      function renderDiffContent(container, data) {
+        while (container.firstChild) container.removeChild(container.firstChild);
+
+        const rec = data.record;
+        const prev = data.previous;
+        const cmp = data.comparison || {};
+
+        if (!rec) {
+          container.appendChild(el("div", { className: "empty-state" }, "未找到对应记录详情"));
+          return;
+        }
+
+        // Section 1: Overview & Diagnosis
+        const diagCard = el("div", { className: "diff-section-card" },
+          el("div", { className: "diff-section-title" }, "诊断归因与原因分析"),
+          el("div", { style: { display: "flex", alignItems: "center", gap: "8px", fontSize: "14px", fontWeight: "600" } },
+            el("span", null, formatMissReason(cmp.miss_reason || rec.miss_reason))
+          )
+        );
+
+        const explanation = getDiagnosisExplanation(cmp, rec, prev);
+        diagCard.appendChild(el("div", { style: { fontSize: "12px", color: "var(--text-muted)", lineHeight: "1.6" } }, explanation));
+        container.appendChild(diagCard);
+
+        // Section 2: Metadata Comparison (Current vs Previous)
+        const metaCard = el("div", { className: "diff-section-card" },
+          el("div", { className: "diff-section-title" }, "轮次元数据对比 (Current vs Previous)"),
+          el("div", { className: "diff-meta-grid" },
+            el("div", { className: "diff-meta-item" },
+              el("span", { className: "diff-meta-label" }, "当前记录 ID"),
+              el("span", { className: "diff-meta-val" }, rec.id)
+            ),
+            el("div", { className: "diff-meta-item" },
+              el("span", { className: "diff-meta-label" }, "前序记录 ID"),
+              el("span", { className: "diff-meta-val" }, prev ? prev.id : "(无前序，会话首轮)")
+            ),
+            el("div", { className: "diff-meta-item" },
+              el("span", { className: "diff-meta-label" }, "当前时间"),
+              el("span", { className: "diff-meta-val" }, formatDate(rec.timestamp))
+            ),
+            el("div", { className: "diff-meta-item" },
+              el("span", { className: "diff-meta-label" }, "前序时间"),
+              el("span", { className: "diff-meta-val" }, prev ? formatDate(prev.timestamp) : "-")
+            ),
+            el("div", { className: "diff-meta-item" },
+              el("span", { className: "diff-meta-label" }, "模型"),
+              el("span", { className: "diff-meta-val" }, rec.display_model || rec.model)
+            ),
+            el("div", { className: "diff-meta-item" },
+              el("span", { className: "diff-meta-label" }, "前序模型"),
+              el("span", { className: "diff-meta-val" }, prev ? (prev.display_model || prev.model) : "-")
+            ),
+            el("div", { className: "diff-meta-item" },
+              el("span", { className: "diff-meta-label" }, "会话标识 (Session Key)"),
+              el("span", { className: "diff-meta-val" }, rec.effective_session_key || rec.session_id || "-")
+            ),
+            el("div", { className: "diff-meta-item" },
+              el("span", { className: "diff-meta-label" }, "上游 Auth ID"),
+              el("span", { className: "diff-meta-val" }, 
+                rec.auth_id || "-",
+                cmp.auth_changed ? el("span", { className: "badge badge-danger", style: { marginLeft: "6px" } }, "账号切换") : null
+              )
+            )
+          )
+        );
+        container.appendChild(metaCard);
+
+        // Section 3: Structural Diff Metrics
+        const structCard = el("div", { className: "diff-section-card" },
+          el("div", { className: "diff-section-title" }, "消息结构对齐指标"),
+          el("div", { style: { display: "flex", gap: "10px", flexWrap: "wrap" } },
+            el("span", { className: "badge badge-primary" }, "相同前缀消息: " + cmp.identical_leading_messages + " 轮"),
+            el("span", { className: "badge " + (cmp.append_only ? "badge-success" : "badge-warning") }, 
+              cmp.append_only ? "✅ 严格仅追加 (Append-Only)" : "⚠️ 前缀已分叉"
+            ),
+            cmp.auth_changed ? el("span", { className: "badge badge-danger" }, "❌ 上游账号已轮换") : null,
+            cmp.hashes_truncated ? el("span", { className: "badge badge-warning" }, "⚠️ 哈希序列超过上限已截断") : null
+          )
+        );
+
+        if (cmp.changed_fields && cmp.changed_fields.length > 0) {
+          structCard.appendChild(el("div", { style: { fontSize: "12px", color: "var(--warning)" } },
+            "变更顶层字段: " + cmp.changed_fields.join(", ")
+          ));
+        }
+
+        if (cmp.changed_options && cmp.changed_options.length > 0) {
+          structCard.appendChild(el("div", { style: { fontSize: "12px", color: "var(--warning)" } },
+            "变更模型参数 (Options): " + cmp.changed_options.join(", ")
+          ));
+        }
+        container.appendChild(structCard);
+
+        // Section 4: Hash Sequence Visualization
+        const hashCard = el("div", { className: "diff-section-card" },
+          el("div", { className: "diff-section-title" }, "消息哈希序列对比 (严格内容无害化摘要)"),
+          el("div", { style: { fontSize: "11px", color: "var(--text-dim)", marginBottom: "4px" } },
+            "绿色表示前序会话前缀完全匹配，黄色为首次分叉消息，蓝色为当前轮次新追加消息。"
+          )
+        );
+
+        const hashList = el("div", { className: "hash-list" });
+        const curHashes = rec.fingerprint?.message_hashes || [];
+        const prevHashes = prev?.fingerprint?.message_hashes || [];
+        const commonCount = cmp.identical_leading_messages || 0;
+
+        if (curHashes.length === 0) {
+          hashList.appendChild(el("div", { className: "empty-state" }, "未提取到消息哈希指纹 (trace_enabled 可能未开启)"));
+        } else {
+          curHashes.forEach((h, idx) => {
+            let itemClass = "hash-append";
+            let statusText = "新增轮次 (Appended)";
+
+            if (idx < commonCount) {
+              itemClass = "hash-match";
+              statusText = "完全匹配 (Matched)";
+            } else if (idx === commonCount && prevHashes.length > commonCount) {
+              itemClass = "hash-diff";
+              statusText = "前缀分叉点 (Diverged)";
+            }
+
+            const item = el("div", { className: "hash-item " + itemClass },
+              el("span", null, "#" + (idx + 1) + " [" + statusText + "]"),
+              el("span", { style: { letterSpacing: "0.5px" } }, h)
+            );
+            hashList.appendChild(item);
+          });
+        }
+
+        hashCard.appendChild(hashList);
+        container.appendChild(hashCard);
+      }
+
+      function getDiagnosisExplanation(cmp, cur, prev) {
+        if (!prev) {
+          return "这是当前会话在监测期内的首轮交互（冷启动）。主流 LLM 提供商仅在后续且携带相同历史前缀的请求中提供缓存命中优惠。";
+        }
+        if (cmp.auth_changed) {
+          return "检测到上游提供商认证账号 (AuthID) 发生切换！LLM 提供商的 Prompt Cache 是与 API Key / 租户强绑定的，跨凭据无法命中上一个账号已建立的缓存。";
+        }
+        if (cmp.changed_fields && cmp.changed_fields.includes("system_hash")) {
+          return "检测到系统提示词 (System Prompt) 发生了变更。系统提示词位于整个对话的最前端，一旦更改将导致全量历史缓存失效。";
+        }
+        if (cmp.changed_fields && cmp.changed_fields.includes("tools_hash")) {
+          return "检测到工具定义 (Tools/Function Definitions) 发生了变更，导致前置结构变化，无法复用上轮缓存。";
+        }
+        if (!cmp.append_only && cmp.identical_leading_messages < (prev.fingerprint?.message_count || 0)) {
+          return "历史消息前缀已被编辑或缩减（分叉位于第 " + (cmp.identical_leading_messages + 1) + " 轮消息）。提供商无法匹配已有前缀，需要重新对分叉后的内容计算全量上下文。";
+        }
+        if (cur.tokens && cur.tokens.cache_read > 0) {
+          return "缓存成功命中！历史前缀保持一致，上游成功复用了已有 KV 缓存。";
+        }
+        return "请求前缀结构保持一致，但上游提供商未返回命中 Token。可能由于上游提供商缓存生命周期到期（TTL 超时），或上游节点负载较高导致缓存被驱逐。";
+      }
+
+      // Approach B: Config Update & Polling
+      async function updateTraceEnabled(enabled) {
+        if (state.isPollingConfig) return;
+        state.isPollingConfig = true;
+
+        const toggle = document.getElementById("trace-toggle");
+        if (toggle) toggle.disabled = true;
+        safeSetText("trace-status-text", "正在同步...");
+
+        try {
+          const patchResp = await apiFetch("/v0/management/plugins/cpa-cache-tracker/config", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ trace_enabled: enabled })
+          });
+
+          if (!patchResp.ok) {
+            throw new Error("PATCH config 失败: HTTP " + patchResp.status);
+          }
+
+          // Poll status until omit_body_after === !enabled
+          const expectedOmit = !enabled;
+          const startTime = Date.now();
+          let synced = false;
+
+          while (Date.now() - startTime < 5000) {
+            await new Promise(r => setTimeout(r, 300));
+            const curStatus = await fetchStatus();
+            if (curStatus && curStatus.omit_body_after === expectedOmit) {
+              synced = true;
+              break;
+            }
+          }
+
+          if (synced) {
+            showToast("运行时指纹追踪状态已更新为: " + (enabled ? "ON" : "OFF"), "success");
+          } else {
+            showToast("配置已提交，但挂载状态同步超时", "warning");
+          }
+        } catch (e) {
+          showToast("更新配置失败: " + e.message, "error");
+          if (toggle && state.status) {
+            toggle.checked = Boolean(state.status.trace_enabled);
+          }
+        } finally {
+          state.isPollingConfig = false;
+          if (toggle) toggle.disabled = false;
+          renderStatus();
+        }
+      }
+
+      async function reloadConfig() {
+        showToast("正在重载插件配置...", "info");
+        try {
+          const resp = await apiFetch("/v0/management/plugins/cpa-cache-tracker/config", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({})
+          });
+
+          if (!resp.ok) {
+            throw new Error("HTTP " + resp.status);
+          }
+
+          await fetchStatus();
+          await fetchSummary();
+          await fetchRecords();
+          showToast("配置已重载并与宿主进程同步！", "success");
+        } catch (e) {
+          showToast("重载配置异常: " + e.message, "error");
+        }
+      }
+
+      // Settings Modal
+      function openSettingsModal() {
+        const modal = document.getElementById("settings-modal-backdrop");
+        if (!modal) return;
+        if (state.status) {
+          const ret = document.getElementById("setting-retention-days");
+          const disk = document.getElementById("setting-max-disk-mb");
+          const hashes = document.getElementById("setting-max-message-hashes");
+          if (ret) ret.value = state.status.retention_days ?? 14;
+          if (disk) disk.value = state.status.max_disk_mb ?? 200;
+          if (hashes) hashes.value = state.status.max_message_hashes ?? 512;
+        }
+        modal.style.display = "flex";
+      }
+
+      function closeSettingsModal() {
+        const modal = document.getElementById("settings-modal-backdrop");
+        if (modal) modal.style.display = "none";
+      }
+
+      async function saveSettings() {
+        const ret = parseInt(document.getElementById("setting-retention-days")?.value || "14", 10);
+        const disk = parseInt(document.getElementById("setting-max-disk-mb")?.value || "200", 10);
+        const hashes = parseInt(document.getElementById("setting-max-message-hashes")?.value || "512", 10);
+
+        try {
+          const resp = await apiFetch("/v0/management/plugins/cpa-cache-tracker/config", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              retention_days: ret,
+              max_disk_mb: disk,
+              max_message_hashes: hashes
+            })
+          });
+
+          if (!resp.ok) throw new Error("HTTP " + resp.status);
+
+          closeSettingsModal();
+          showToast("保留配置已保存", "success");
+          await fetchStatus();
+        } catch (e) {
+          showToast("保存配置失败: " + e.message, "error");
+        }
+      }
+
+      async function purgeData(all) {
+        const msg = all ? "确认清空所有追踪记录吗？此操作无法撤销！" : "确认清理所有过期数据吗？";
+        if (!confirm(msg)) return;
+
+        try {
+          const body = all ? { all: true } : { older_than_days: state.status?.retention_days || 14 };
+          const resp = await apiFetch("/v0/management/plugins/cpa-cache-tracker/purge", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body)
+          });
+
+          if (!resp.ok) throw new Error("HTTP " + resp.status);
+          const res = await resp.json();
+
+          showToast("清理完成！已删除 " + res.deleted_records + " 条记录 (" + res.deleted_files + " 个文件)", "success");
+          closeSettingsModal();
+          await fetchStatus();
+          await fetchSummary();
+          await fetchRecords();
+        } catch (e) {
+          showToast("清理失败: " + e.message, "error");
+        }
+      }
+
+      // Auth Modal
+      function openAuthModal(msg) {
+        const modal = document.getElementById("auth-modal-backdrop");
+        const input = document.getElementById("auth-key-input");
+        if (modal) modal.style.display = "flex";
+        if (input) {
+          input.value = state.authKey || "";
+          input.focus();
+        }
+        if (msg) showToast(msg, "warning");
+      }
+
+      function closeAuthModal() {
+        const modal = document.getElementById("auth-modal-backdrop");
+        if (modal) modal.style.display = "none";
+      }
+
+      function saveAuthKey() {
+        const input = document.getElementById("auth-key-input");
+        const val = input ? input.value.trim() : "";
+        state.authKey = val;
+        sessionStorage.setItem("cpa-cache-tracker-key", val);
+        closeAuthModal();
+        showToast("管理凭据已更新", "success");
+        initData();
+      }
+
+      // Event Wiring
+      function setupEventListeners() {
+        // Range buttons
+        const rangeContainer = document.getElementById("range-selector");
+        if (rangeContainer) {
+          rangeContainer.addEventListener("click", (e) => {
+            const btn = e.target.closest(".range-btn");
+            if (!btn) return;
+            rangeContainer.querySelectorAll(".range-btn").forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
+            state.currentRange = btn.dataset.range || "today";
+            state.recordsOffset = 0;
+            fetchSummary();
+            fetchRecords();
+          });
+        }
+
+        // Kind Select
+        const kSelect = document.getElementById("kind-select");
+        if (kSelect) {
+          kSelect.addEventListener("change", (e) => {
+            state.currentKind = e.target.value;
+            state.recordsOffset = 0;
+            fetchSummary();
+            fetchRecords();
+          });
+        }
+
+        // Model Select
+        const mSelect = document.getElementById("model-select");
+        if (mSelect) {
+          mSelect.addEventListener("change", (e) => {
+            state.currentModel = e.target.value;
+            state.recordsOffset = 0;
+            fetchSummary();
+            fetchRecords();
+          });
+        }
+
+        // Chart Model Select
+        const chartMSelect = document.getElementById("chart-model-select");
+        if (chartMSelect) {
+          chartMSelect.addEventListener("change", (e) => {
+            state.selectedChartModel = e.target.value;
+            drawChart();
+          });
+        }
+
+        // Provider Select
+        const pSelect = document.getElementById("provider-select");
+        if (pSelect) {
+          pSelect.addEventListener("change", (e) => {
+            state.currentProvider = e.target.value;
+            state.recordsOffset = 0;
+            fetchSummary();
+            fetchRecords();
+          });
+        }
+
+        // Status Select
+        const sSelect = document.getElementById("status-select");
+        if (sSelect) {
+          sSelect.addEventListener("change", (e) => {
+            state.currentStatus = e.target.value;
+            state.recordsOffset = 0;
+            fetchRecords();
+          });
+        }
+
+        // Search Input
+        const searchInput = document.getElementById("search-input");
+        if (searchInput) {
+          searchInput.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+              state.searchQuery = searchInput.value.trim();
+              state.recordsOffset = 0;
+              fetchRecords();
+            }
+          });
+        }
+
+        // Refresh Button
+        const refreshBtn = document.getElementById("refresh-btn");
+        if (refreshBtn) {
+          refreshBtn.addEventListener("click", () => {
+            if (searchInput) state.searchQuery = searchInput.value.trim();
+            fetchStatus();
+            fetchSummary();
+            fetchRecords();
+          });
+        }
+
+        // Auto Refresh Toggle
+        const autoRef = document.getElementById("autorefresh-toggle");
+        if (autoRef) {
+          autoRef.addEventListener("change", (e) => {
+            if (e.target.checked) startAutoRefresh();
+            else stopAutoRefresh();
+          });
+        }
+
+        // Fingerprint Toggle
+        const traceToggle = document.getElementById("trace-toggle");
+        if (traceToggle) {
+          traceToggle.addEventListener("change", (e) => {
+            updateTraceEnabled(e.target.checked);
+          });
+        }
+
+        // Reload Config Button
+        const reloadBtn = document.getElementById("reload-btn");
+        if (reloadBtn) {
+          reloadBtn.addEventListener("click", reloadConfig);
+        }
+
+        // Settings Modal
+        const settingsBtn = document.getElementById("settings-btn");
+        if (settingsBtn) settingsBtn.addEventListener("click", openSettingsModal);
+        const settingsCancelBtn = document.getElementById("settings-cancel-btn");
+        if (settingsCancelBtn) settingsCancelBtn.addEventListener("click", closeSettingsModal);
+        const settingsSaveBtn = document.getElementById("settings-save-btn");
+        if (settingsSaveBtn) settingsSaveBtn.addEventListener("click", saveSettings);
+
+        const purgeExpBtn = document.getElementById("purge-expired-btn");
+        if (purgeExpBtn) purgeExpBtn.addEventListener("click", () => purgeData(false));
+        const purgeAllBtn = document.getElementById("purge-all-btn");
+        if (purgeAllBtn) purgeAllBtn.addEventListener("click", () => purgeData(true));
+
+        // Auth Modal
+        const authBtn = document.getElementById("auth-btn");
+        if (authBtn) authBtn.addEventListener("click", () => openAuthModal());
+        const authCancelBtn = document.getElementById("auth-cancel-btn");
+        if (authCancelBtn) authCancelBtn.addEventListener("click", closeAuthModal);
+        const authSaveBtn = document.getElementById("auth-save-btn");
+        if (authSaveBtn) authSaveBtn.addEventListener("click", saveAuthKey);
+
+        // Drawer Close
+        const drawerCloseBtn = document.getElementById("drawer-close-btn");
+        if (drawerCloseBtn) drawerCloseBtn.addEventListener("click", closeDiffDrawer);
+        const drawerBackdrop = document.getElementById("drawer-backdrop");
+        if (drawerBackdrop) drawerBackdrop.addEventListener("click", closeDiffDrawer);
+
+        // Pagination
+        const prevBtn = document.getElementById("prev-page-btn");
+        if (prevBtn) {
+          prevBtn.addEventListener("click", () => {
+            if (state.recordsOffset > 0) {
+              state.recordsOffset = Math.max(0, state.recordsOffset - state.recordsLimit);
+              fetchRecords();
+            }
+          });
+        }
+        const nextBtn = document.getElementById("next-page-btn");
+        if (nextBtn) {
+          nextBtn.addEventListener("click", () => {
+            if (state.recordsOffset + state.recordsLimit < state.recordsTotal) {
+              state.recordsOffset += state.recordsLimit;
+              fetchRecords();
+            }
+          });
+        }
+        const limitSelect = document.getElementById("records-limit-select");
+        if (limitSelect) {
+          limitSelect.addEventListener("change", (e) => {
+            state.recordsLimit = parseInt(e.target.value, 10) || 50;
+            state.recordsOffset = 0;
+            fetchRecords();
+          });
+        }
+
+        // Window resize for chart
+        window.addEventListener("resize", () => {
+          drawChart();
+        });
+
+        // ESC key to close modal/drawer
+        window.addEventListener("keydown", (e) => {
+          if (e.key === "Escape") {
+            closeDiffDrawer();
+            closeSettingsModal();
+            closeAuthModal();
+          }
+        });
+      }
+
+      function startAutoRefresh() {
+        stopAutoRefresh();
+        state.autoRefreshInterval = setInterval(() => {
+          fetchStatus();
+          fetchSummary();
+          fetchRecords();
+        }, 10000);
+      }
+
+      function stopAutoRefresh() {
+        if (state.autoRefreshInterval) {
+          clearInterval(state.autoRefreshInterval);
+          state.autoRefreshInterval = null;
+        }
+      }
+
+      async function initData() {
+        state.authKey = resolveAuthKey();
+        await fetchStatus();
+        await fetchSummary();
+        await fetchRecords();
+        startAutoRefresh();
+      }
+
+      // Initialize
+      document.addEventListener("DOMContentLoaded", () => {
+        setupEventListeners();
+        initData();
+      });
+    })();
+  </script>
+</body>
+</html>
