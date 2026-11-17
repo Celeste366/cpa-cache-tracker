@@ -10,7 +10,9 @@ The panel uses the management center's saved management key when available. In a
 
 ## Build and install
 
-Requires macOS arm64, Go 1.26+, a C compiler, and Node.js for frontend tests.
+Requires Go 1.26+, a C compiler (GCC/Clang on Unix; MinGW-w64 on Windows for `-buildmode=c-shared`), and Node.js for frontend tests.
+
+Supports multi-OS/multi-architecture builds (`darwin/arm64`, `darwin/amd64`, `linux/amd64`, `linux/arm64`, `windows/amd64`, `windows/arm64`). `Makefile` detects `GOOS`/`GOARCH` automatically (or accepts `GOOS=... GOARCH=...` overrides) and outputs the host-matching library extension (`.dylib`, `.so`, or `.dll`) into `bin/`, installing to `~/.cli-proxy-api/plugins/<os>/<arch>/`:
 
 ```sh
 make test
@@ -18,6 +20,8 @@ go vet ./...
 make build
 make install
 ```
+
+On Linux containers/hosts, compile against the same libc family as the CPA binary (`glibc` vs `musl`). On cross-compilation hosts, pass the target C compiler via `CC=...` alongside `GOOS`/`GOARCH`.
 
 Release: **0.1.4**, C ABI 1, schema 10. The host switches native libraries by versioned path, so replacing a loaded library at the same path does not activate its new bytes. Install a new versioned filename and trigger a CPA config reload. Keep the previous version or backup for rollback.
 
@@ -36,7 +40,7 @@ plugins:
       data_dir: .cache_tracker_data
 ```
 
-Merge this block into the existing configuration; do not replace other plugins. Default data path resolves under ~/.cli-proxy-api. Fingerprints retain hashes, lengths and routing/session identifiers; prompt text, tool schemas and API keys are not persisted.
+Merge this block into the existing configuration; do not replace other plugins. Both `~/...` and Windows `~\...` prefixes expand to the user's home directory; when the host runs with a root or Windows system working directory (`/` or `C:\Windows\System32`), relative `data_dir` values resolve under `~/.cli-proxy-api/` (or `%USERPROFILE%\.cli-proxy-api\` on Windows). Fingerprints retain hashes, lengths and routing/session identifiers; prompt text, tool schemas and API keys are not persisted.
 
 ## Accounting and limits
 

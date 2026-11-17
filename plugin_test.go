@@ -1049,3 +1049,142 @@ max_message_hashes: 512
 		t.Errorf("case 3: expected SessionID 'sess-canonical-override', got %q", item3.SessionID)
 	}
 }
+
+func TestResolveDataDirCrossPlatform(t *testing.T) {
+	cases := []struct {
+		name string
+		dir  string
+		cwd  string
+		home string
+		want string
+	}{
+		{
+			name: "empty dir defaults on non-root unix cwd",
+			dir:  "   ",
+			cwd:  "/home/user/.cli-proxy-api",
+			home: "/home/user",
+			want: ".cache_tracker_data",
+		},
+		{
+			name: "unix tilde subpath",
+			dir:  "~/custom_dir/cache",
+			cwd:  "/",
+			home: "/home/user",
+			want: "/home/user/custom_dir/cache",
+		},
+		{
+			name: "windows tilde backslash subpath",
+			dir:  `~\custom_dir\cache`,
+			cwd:  `C:\`,
+			home: `C:\Users\user`,
+			want: `C:\Users\user\custom_dir\cache`,
+		},
+		{
+			name: "bare tilde expands to home",
+			dir:  "~",
+			cwd:  "/tmp",
+			home: "/home/user",
+			want: "/home/user",
+		},
+		{
+			name: "unix root cwd falls back to home .cli-proxy-api",
+			dir:  ".cache_tracker_data",
+			cwd:  "/",
+			home: "/home/cpa",
+			want: "/home/cpa/.cli-proxy-api/.cache_tracker_data",
+		},
+		{
+			name: "empty cwd falls back to home .cli-proxy-api",
+			dir:  ".cache_tracker_data",
+			cwd:  "",
+			home: "/home/cpa",
+			want: "/home/cpa/.cli-proxy-api/.cache_tracker_data",
+		},
+		{
+			name: "windows drive backslash root cwd falls back to home .cli-proxy-api",
+			dir:  ".cache_tracker_data",
+			cwd:  `C:\`,
+			home: `C:\Users\user`,
+			want: `C:\Users\user\.cli-proxy-api\.cache_tracker_data`,
+		},
+		{
+			name: "windows drive forward-slash root cwd falls back to home .cli-proxy-api",
+			dir:  ".cache_tracker_data",
+			cwd:  "C:/",
+			home: `C:\Users\user`,
+			want: `C:\Users\user\.cli-proxy-api\.cache_tracker_data`,
+		},
+		{
+			name: "windows secondary drive root cwd falls back to home .cli-proxy-api",
+			dir:  ".cache_tracker_data",
+			cwd:  `D:\`,
+			home: `C:\Users\user`,
+			want: `C:\Users\user\.cli-proxy-api\.cache_tracker_data`,
+		},
+		{
+			name: "windows system32 cwd falls back to home .cli-proxy-api",
+			dir:  ".cache_tracker_data",
+			cwd:  `C:\Windows\System32`,
+			home: `C:\Users\user`,
+			want: `C:\Users\user\.cli-proxy-api\.cache_tracker_data`,
+		},
+		{
+			name: "windows syswow64 lowercase cwd falls back to home .cli-proxy-api",
+			dir:  ".cache_tracker_data",
+			cwd:  `c:\windows\syswow64`,
+			home: `C:\Users\user`,
+			want: `C:\Users\user\.cli-proxy-api\.cache_tracker_data`,
+		},
+		{
+			name: "normal non-root unix cwd keeps relative cleaned",
+			dir:  "./.cache_tracker_data/",
+			cwd:  "/srv/cpa",
+			home: "/home/cpa",
+			want: ".cache_tracker_data",
+		},
+		{
+			name: "normal non-root windows cwd keeps relative cleaned",
+			dir:  "./.cache_tracker_data",
+			cwd:  `D:\apps\cpa`,
+			home: `C:\Users\user`,
+			want: ".cache_tracker_data",
+		},
+		{
+			name: "windows backslash absolute path preserved",
+			dir:  `C:\data\cache`,
+			cwd:  `C:\Windows\System32`,
+			home: `C:\Users\user`,
+			want: `C:\data\cache`,
+		},
+		{
+			name: "windows forward-slash absolute path preserved",
+			dir:  "D:/cache",
+			cwd:  "C:/",
+			home: `C:\Users\user`,
+			want: "D:/cache",
+		},
+		{
+			name: "windows UNC path preserved",
+			dir:  `\\nas\share\cache`,
+			cwd:  `C:\`,
+			home: `C:\Users\user`,
+			want: `\\nas\share\cache`,
+		},
+		{
+			name: "unix absolute path preserved",
+			dir:  "/var/lib/cpa/cache",
+			cwd:  "/",
+			home: "/home/cpa",
+			want: "/var/lib/cpa/cache",
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := main.ResolveDataDirForOS(tc.dir, tc.cwd, tc.home)
+			if got != tc.want {
+				t.Errorf("ResolveDataDirForOS(%q, %q, %q) = %q, want %q", tc.dir, tc.cwd, tc.home, got, tc.want)
+			}
+		})
+	}
+}

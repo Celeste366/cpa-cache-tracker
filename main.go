@@ -37,6 +37,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -466,25 +467,166 @@ func (d *Dispatcher) buildRegistrationLocked() abi.Registration {
 }
 
 func resolveDataDir(dir string) string {
+	cwd, errCwd := os.Getwd()
+	if errCwd != nil {
+		cwd = ""
+	}
+	home, errHome := os.UserHomeDir()
+	if errHome != nil {
+		home = ""
+	}
+	return ResolveDataDirForOS(dir, cwd, home)
+}
+
+// ResolveDataDirForOS resolves a configured plugin data directory across Unix and Windows hosts.
+func ResolveDataDirForOS(dir, cwd, home string) string {
 	dir = strings.TrimSpace(dir)
 	if dir == "" {
 		dir = ".cache_tracker_data"
 	}
-	if strings.HasPrefix(dir, "~/") {
-		if home, err := os.UserHomeDir(); err == nil {
-			return filepath.Join(home, dir[2:])
+	home = strings.TrimSpace(home)
+
+	if dir == "~" && home != "" {
+		return cleanCrossPlatformPath(home)
+	}
+	if strings.HasPrefix(dir, "~/") || strings.HasPrefix(dir, `~\`) {
+		if home != "" {
+			return joinCrossPlatformPath(home, dir[2:])
 		}
 	}
-	if filepath.IsAbs(dir) {
-		return filepath.Clean(dir)
+	if isCrossPlatformAbs(dir) {
+		return cleanCrossPlatformPath(dir)
 	}
-	cwd, err := os.Getwd()
-	if err == nil && (cwd == "/" || cwd == "") {
-		if home, errHome := os.UserHomeDir(); errHome == nil {
-			return filepath.Join(home, ".cli-proxy-api", dir)
+	if isRootOrSystemCWD(cwd) && home != "" {
+		return joinCrossPlatformPath(home, ".cli-proxy-api", dir)
+	}
+	return cleanCrossPlatformPath(dir)
+}
+
+func isASCIIAlpha(b byte) bool {
+	return ('A' <= b && b <= 'Z') || ('a' <= b && b <= 'z')
+}
+
+func hasWindowsDrivePrefix(p string) bool {
+	return len(p) >= 2 && isASCIIAlpha(p[0]) && p[1] == ':'
+}
+
+func isWindowsAbsPath(p string) bool {
+	if len(p) >= 3 && hasWindowsDrivePrefix(p) && (p[2] == '\\' || p[2] == '/') {
+		return true
+	}
+	return strings.HasPrefix(p, `\\`) || strings.HasPrefix(p, "//")
+}
+
+func isCrossPlatformAbs(p string) bool {
+	return filepath.IsAbs(p) || isWindowsAbsPath(p)
+}
+
+func isRootOrSystemCWD(cwd string) bool {
+	cwd = strings.TrimSpace(cwd)
+	if cwd == "" || cwd == "/" || cwd == `\` {
+		return true
+	}
+	norm := strings.ToLower(strings.ReplaceAll(cwd, `\`, "/"))
+	if strings.TrimRight(norm, "/") == "" {
+		return true
+	}
+	if hasWindowsDrivePrefix(norm) {
+		rest := strings.TrimRight(norm[2:], "/")
+		if rest == "" {
+			return true
+		}
+		if rest == "/windows" ||
+			rest == "/windows/system32" || strings.HasPrefix(rest, "/windows/system32/") ||
+			rest == "/windows/syswow64" || strings.HasPrefix(rest, "/windows/syswow64/") {
+			return true
 		}
 	}
-	return filepath.Clean(dir)
+	return false
+}
+
+func isWindowsStylePath(p string) bool {
+	return hasWindowsDrivePrefix(p) || strings.HasPrefix(p, `\\`) || strings.Contains(p, `\`)
+}
+
+func cleanCrossPlatformPath(p string) string {
+	p = strings.TrimSpace(p)
+	if p == "" {
+		return "."
+	}
+	if strings.HasPrefix(p, `\\`) {
+		slashed := strings.TrimPrefix(strings.ReplaceAll(p[2:], `\`, "/"), "/")
+		cleaned := path.Clean("/" + slashed)
+		return `\\` + strings.ReplaceAll(strings.TrimPrefix(cleaned, "/"), "/", `\`)
+	}
+	if hasWindowsDrivePrefix(p) {
+		prefix := p[:2]
+		rest := p[2:]
+		useBackslash := strings.Contains(p, `\`)
+		cleaned := path.Clean(strings.ReplaceAll(rest, `\`, "/"))
+		if cleaned == "." {
+			cleaned = ""
+		}
+		if useBackslash {
+			cleaned = strings.ReplaceAll(cleaned, "/", `\`)
+		}
+		return prefix + cleaned
+	}
+	if strings.Contains(p, `\`) {
+		cleaned := path.Clean(strings.ReplaceAll(p, `\`, "/"))
+		return strings.ReplaceAll(cleaned, "/", `\`)
+	}
+	return filepath.Clean(p)
+}
+
+func joinCrossPlatformPath(parts ...string) string {
+	if len(parts) == 0 {
+		return "."
+	}
+	base := strings.TrimSpace(parts[0])
+	if isWindowsStylePath(base) && !(strings.Contains(base, "/") && !strings.Contains(base, `\`)) {
+		normParts := make([]string, 0, len(parts))
+		hasUNC := strings.HasPrefix(base, `\\`)
+		drivePrefix := ""
+		for i, part := range parts {
+			s := strings.TrimSpace(part)
+			if s == "" {
+				continue
+			}
+			if i == 0 && hasWindowsDrivePrefix(s) {
+				drivePrefix = s[:2]
+				s = s[2:]
+			} else if i == 0 && hasUNC {
+				s = s[2:]
+			}
+			s = strings.ReplaceAll(s, `\`, "/")
+			s = strings.Trim(s, "/")
+			if s != "" {
+				normParts = append(normParts, s)
+			}
+		}
+		joined := path.Clean("/" + strings.Join(normParts, "/"))
+		winBody := strings.ReplaceAll(strings.TrimPrefix(joined, "/"), "/", `\`)
+		if hasUNC {
+			return `\\` + winBody
+		}
+		if drivePrefix != "" {
+			return drivePrefix + `\` + winBody
+		}
+		return winBody
+	}
+	unixParts := make([]string, 0, len(parts))
+	for i, part := range parts {
+		s := strings.TrimSpace(part)
+		if s == "" {
+			continue
+		}
+		if i > 0 {
+			s = strings.ReplaceAll(s, `\`, "/")
+		}
+		unixParts = append(unixParts, s)
+	}
+	return filepath.Join(unixParts...)
 }
 
 func main() {}
