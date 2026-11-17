@@ -19,7 +19,7 @@ make build
 make install
 ```
 
-Release: **0.1.3**, C ABI 1, schema 10. The host switches native libraries by versioned path, so replacing a loaded library at the same path does not activate its new bytes. Install a new versioned filename and trigger a CPA config reload. Keep the previous version or backup for rollback.
+Release: **0.1.4**, C ABI 1, schema 10. The host switches native libraries by versioned path, so replacing a loaded library at the same path does not activate its new bytes. Install a new versioned filename and trigger a CPA config reload. Keep the previous version or backup for rollback.
 
 Enable under CPA config.yaml:
 
@@ -62,3 +62,7 @@ Forest/Porcelain dashboard redesign: responsive sidebar, clearer overview and me
 ## Release 0.1.3
 
 Embeds the dashboard favicon to avoid a missing host-level /favicon.ico request. No external assets are required.
+
+## Release 0.1.4
+
+Follows the system light/dark appearance automatically using prefers-color-scheme, including controls, tables, badges, settings, authentication and diff panels. Canvas charts read shared CSS palette tokens and redraw immediately on a system appearance change without reloading or waiting for a data refresh. No stored theme override is applied.

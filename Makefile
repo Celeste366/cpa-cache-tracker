@@ -1,7 +1,7 @@
 .PHONY: all build test install clean
 
 PLUGIN_NAME := cpa-cache-tracker
-VERSION := v0.1.3
+VERSION := v0.1.4
 BIN_DIR := bin
 DYLIB_NAME := $(PLUGIN_NAME)-$(VERSION).dylib
 DYLIB_PATH := $(BIN_DIR)/$(DYLIB_NAME)
@@ -14,7 +14,7 @@ all: build
 
 test:
 	go test -race -v ./...
-	node --test ui/panel_auth.test.cjs
+	node --test ui/panel_*.test.cjs
 
 build:
 	mkdir -p $(BIN_DIR)
