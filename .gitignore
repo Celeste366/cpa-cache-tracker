@@ -3,3 +3,18 @@ bin/
 *.dylib
 *.h
 .superpowers/
+
+# Local planning documents and private runtime state
+docs/superpowers/
+.env
+.env.*
+!.env.example
+config.yaml
+config.yaml.*
+.cache_tracker_data/
+*.jsonl
+.management-secret
+.client-api-key
+*.pem
+*.key
+.DS_Store
