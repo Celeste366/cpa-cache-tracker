@@ -10,7 +10,7 @@ async function boot(key,status){
  const values=new Map(key ? [['cpa-cache-tracker-key',key]] : []);
  const storage={getItem:k=>values.get(k)||null,setItem:(k,v)=>values.set(k,v),removeItem:k=>values.delete(k)};
  const context={
-  document:{querySelectorAll:()=>[],getElementById:id=>id==='auth-modal-backdrop'?modal:null,addEventListener:(name,fn)=>{if(name==='DOMContentLoaded')ready=fn;}},
+  document:{documentElement:{},querySelectorAll:()=>[],getElementById:id=>id==='auth-modal-backdrop'?modal:null,addEventListener:(name,fn)=>{if(name==='DOMContentLoaded')ready=fn;}},
   window:{addEventListener(){},location:{host:'localhost:8080',search:'',pathname:'/',hash:''}},
   navigator:{userAgent:'test'},sessionStorage:storage,localStorage:{getItem:()=>null},URLSearchParams,
   fetch:async()=>{requests++;return {status,ok:status===200,json:async()=>({}),text:async()=>'{"error":"IP banned"}'};},

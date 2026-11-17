@@ -3,10 +3,10 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8"/>
-<meta name="color-scheme" content="light dark"/>
+<meta content="light dark" name="color-scheme"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Cache Tracker - CPA 缓存追踪看板</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%229%22%20fill%3D%22%23b8f3cf%22%2F%3E%3Cpath%20d%3D%22M22%2010a9%209%200%201%200%200%2012%22%20fill%3D%22none%22%20stroke%3D%22%23173c2b%22%20stroke-width%3D%223%22%20stroke-linecap%3D%22round%22%2F%3E%3Ccircle%20cx%3D%2223%22%20cy%3D%2223%22%20r%3D%222%22%20fill%3D%22%23267a50%22%2F%3E%3C%2Fsvg%3E"/>
+<link href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%229%22%20fill%3D%22%23b8f3cf%22%2F%3E%3Cpath%20d%3D%22M22%2010a9%209%200%201%200%200%2012%22%20fill%3D%22none%22%20stroke%3D%22%23173c2b%22%20stroke-width%3D%223%22%20stroke-linecap%3D%22round%22%2F%3E%3Ccircle%20cx%3D%2223%22%20cy%3D%2223%22%20r%3D%222%22%20fill%3D%22%23267a50%22%2F%3E%3C%2Fsvg%3E" rel="icon" type="image/svg+xml"/>
 <style>
     :root {
       --bg-base: #090d16;
@@ -688,49 +688,53 @@ select,input[type=text],input[type=number],input[type=password]{background:var(-
   .metric-1 { border-color:#326346; }
   .metric-1 .kpi-caption { color:#a4cbb2!important; }
 }
+
+#language-select{width:auto;min-width:78px;padding:7px 9px;background:var(--bg-surface);color:var(--text-main);border:1px solid var(--border-normal);border-radius:8px;font-size:11px;cursor:pointer}
+@media(max-width:760px){#language-select{min-width:68px;font-size:10px;padding:6px}}
+@media(max-width:480px){body>header .brand-wrap,.header-actions .live-pill{display:none}.header-top{justify-content:flex-end}.header-actions{gap:6px}}
 </style></head>
-<body><svg aria-hidden="true" class="icon-sprite" xmlns="http://www.w3.org/2000/svg"><defs><symbol id="i-grid" viewbox="0 0 24 24"><rect height="7" rx="1.5" width="7" x="3" y="3"></rect><rect height="7" rx="1.5" width="7" x="14" y="3"></rect><rect height="7" rx="1.5" width="7" x="3" y="14"></rect><rect height="7" rx="1.5" width="7" x="14" y="14"></rect></symbol><symbol id="i-layers" viewbox="0 0 24 24"><path d="m3 8 9-5 9 5-9 5-9-5Zm0 5 9 5 9-5M3 18l9 5 9-5"></path></symbol><symbol id="i-list" viewbox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"></path></symbol><symbol id="i-database" viewbox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M3 5v14c0 4 18 4 18 0V5M3 12c0 4 18 4 18 0"></path></symbol><symbol id="i-lock" viewbox="0 0 24 24"><rect height="11" rx="2" width="14" x="5" y="10"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3m-4 5v2"></path></symbol><symbol id="i-refresh" viewbox="0 0 24 24"><path d="M20 7v5h-5M4 17v-5h5M6 7a7 7 0 0 1 12-2l2 3M4 16l2 3a7 7 0 0 0 12-2"></path></symbol><symbol id="i-sliders" viewbox="0 0 24 24"><path d="M4 7h8m4 0h4M4 17h2m4 0h10"></path><circle cx="14" cy="7" r="2"></circle><circle cx="8" cy="17" r="2"></circle></symbol><symbol id="i-arrow" viewbox="0 0 24 24"><path d="M5 12h14m-5-5 5 5-5 5"></path></symbol><symbol id="i-pulse" viewbox="0 0 24 24"><path d="M2 12h5l3-8 4 16 3-8h5"></path></symbol></defs></svg><aside aria-label="主导航" class="app-sidebar">
+<body><svg aria-hidden="true" class="icon-sprite" xmlns="http://www.w3.org/2000/svg"><defs><symbol id="i-grid" viewbox="0 0 24 24"><rect height="7" rx="1.5" width="7" x="3" y="3"></rect><rect height="7" rx="1.5" width="7" x="14" y="3"></rect><rect height="7" rx="1.5" width="7" x="3" y="14"></rect><rect height="7" rx="1.5" width="7" x="14" y="14"></rect></symbol><symbol id="i-layers" viewbox="0 0 24 24"><path d="m3 8 9-5 9 5-9 5-9-5Zm0 5 9 5 9-5M3 18l9 5 9-5"></path></symbol><symbol id="i-list" viewbox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"></path></symbol><symbol id="i-database" viewbox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M3 5v14c0 4 18 4 18 0V5M3 12c0 4 18 4 18 0"></path></symbol><symbol id="i-lock" viewbox="0 0 24 24"><rect height="11" rx="2" width="14" x="5" y="10"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3m-4 5v2"></path></symbol><symbol id="i-refresh" viewbox="0 0 24 24"><path d="M20 7v5h-5M4 17v-5h5M6 7a7 7 0 0 1 12-2l2 3M4 16l2 3a7 7 0 0 0 12-2"></path></symbol><symbol id="i-sliders" viewbox="0 0 24 24"><path d="M4 7h8m4 0h4M4 17h2m4 0h10"></path><circle cx="14" cy="7" r="2"></circle><circle cx="8" cy="17" r="2"></circle></symbol><symbol id="i-arrow" viewbox="0 0 24 24"><path d="M5 12h14m-5-5 5 5-5 5"></path></symbol><symbol id="i-pulse" viewbox="0 0 24 24"><path d="M2 12h5l3-8 4 16 3-8h5"></path></symbol></defs></svg><aside aria-label="主导航" class="app-sidebar" data-i18n-attr-aria-label="主导航">
 <a class="sidebar-brand" href="#overview"><span class="brand-mark">C<span></span></span><span>Cache Tracker<small>CPA OBSERVABILITY</small></span></a>
-<div class="nav-label">监控工作台</div>
-<nav><a aria-label="缓存概览" class="nav-link active" href="#overview"><svg aria-hidden="true" class="icon"><use href="#i-grid"></use></svg><span>缓存概览</span><span class="nav-dot"></span></a><a aria-label="模型分析" class="nav-link" href="#models"><svg aria-hidden="true" class="icon"><use href="#i-layers"></use></svg><span>模型分析</span></a><a aria-label="请求记录" class="nav-link" href="#requests"><svg aria-hidden="true" class="icon"><use href="#i-list"></use></svg><span>请求记录</span></a></nav>
-<div class="nav-divider"></div><div class="nav-label">工作区</div>
-<nav><button aria-label="存储与保留" class="nav-link" id="sidebar-settings"><svg aria-hidden="true" class="icon"><use href="#i-database"></use></svg><span>存储与保留</span></button><button aria-label="管理凭据" class="nav-link" id="sidebar-auth"><svg aria-hidden="true" class="icon"><use href="#i-lock"></use></svg><span>管理凭据</span></button></nav>
-<div class="sidebar-note"><div><span class="live-dot"></span>本地工作区</div><span>数据保存在本机</span><small>CLIProxyAPI · Cache Tracker</small></div>
+<div class="nav-label" data-i18n="监控工作台">监控工作台</div>
+<nav><a aria-label="缓存概览" class="nav-link active" data-i18n-attr-aria-label="缓存概览" href="#overview"><svg aria-hidden="true" class="icon"><use href="#i-grid"></use></svg><span data-i18n="缓存概览">缓存概览</span><span class="nav-dot"></span></a><a aria-label="模型分析" class="nav-link" data-i18n-attr-aria-label="模型分析" href="#models"><svg aria-hidden="true" class="icon"><use href="#i-layers"></use></svg><span data-i18n="模型分析">模型分析</span></a><a aria-label="请求记录" class="nav-link" data-i18n-attr-aria-label="请求记录" href="#requests"><svg aria-hidden="true" class="icon"><use href="#i-list"></use></svg><span data-i18n="请求记录">请求记录</span></a></nav>
+<div class="nav-divider"></div><div class="nav-label" data-i18n="工作区">工作区</div>
+<nav><button aria-label="存储与保留" class="nav-link" data-i18n-attr-aria-label="存储与保留" id="sidebar-settings"><svg aria-hidden="true" class="icon"><use href="#i-database"></use></svg><span data-i18n="存储与保留">存储与保留</span></button><button aria-label="管理凭据" class="nav-link" data-i18n-attr-aria-label="管理凭据" id="sidebar-auth"><svg aria-hidden="true" class="icon"><use href="#i-lock"></use></svg><span data-i18n="管理凭据">管理凭据</span></button></nav>
+<div class="sidebar-note"><div><span class="live-dot"></span><span data-i18n="本地工作区">本地工作区</span></div><span data-i18n="数据保存在本机">数据保存在本机</span><small>CLIProxyAPI · Cache Tracker</small></div>
 </aside>
 <!-- Top Header -->
 <header>
 <div class="header-top">
 <div class="brand-wrap">
-<div class="brand-title"><span class="breadcrumb-muted">工作区 <span class="slash">/</span></span><span>缓存监控</span></div>
+<div class="brand-title"><span class="breadcrumb-muted"><span data-i18n="工作区">工作区</span><span class="slash">/</span></span><span data-i18n="缓存监控">缓存监控</span></div>
 <!-- Tracing Switch (Approach B) -->
 </div>
-<div class="header-actions"><span class="live-pill"><span class="live-dot"></span>实时观测</span>
+<div class="header-actions"><span class="live-pill"><span class="live-dot"></span><span data-i18n="实时观测">实时观测</span></span><select aria-label="Language / 语言" id="language-select" title="Language / 语言"><option value="zh">中文</option><option value="en">English</option></select>
 <!-- Live Status Indicators -->
 <!-- Control Buttons -->
-<button class="btn" id="settings-btn" title="设置保留周期与存储上限"><svg aria-hidden="true" class="icon"><use href="#i-sliders"></use></svg><span>设置</span></button>
-<button aria-label="管理凭据" class="btn btn-sm" id="auth-btn" title="查看或更新管理密钥"><svg aria-hidden="true" class="icon"><use href="#i-lock"></use></svg></button>
+<button class="btn" data-i18n-attr-title="设置保留周期与存储上限" id="settings-btn" title="设置保留周期与存储上限"><svg aria-hidden="true" class="icon"><use href="#i-sliders"></use></svg><span data-i18n="设置">设置</span></button>
+<button aria-label="管理凭据" class="btn btn-sm" data-i18n-attr-aria-label="管理凭据" data-i18n-attr-title="查看或更新管理密钥" id="auth-btn" title="查看或更新管理密钥"><svg aria-hidden="true" class="icon"><use href="#i-lock"></use></svg></button>
 </div>
 </div>
 </header>
 <!-- Main Content -->
-<main><section class="page-intro" id="overview"><div><div class="eyebrow">CACHE ANALYTICS</div><h1>缓存概览<span class="title-dot">.</span></h1><p>查看每一次请求的缓存表现，快速定位未命中原因。</p></div><div class="intro-actions"><label class="switch-container" title="开启内容指纹以比较同会话的请求差异">
-<span>指纹追踪</span>
+<main><section class="page-intro" id="overview"><div><div class="eyebrow">CACHE ANALYTICS</div><h1><span data-i18n="缓存概览">缓存概览</span><span class="title-dot">.</span></h1><p data-i18n="查看每一次请求的缓存表现，快速定位未命中原因。">查看每一次请求的缓存表现，快速定位未命中原因。</p></div><div class="intro-actions"><label class="switch-container" data-i18n-attr-title="开启内容指纹以比较同会话的请求差异" title="开启内容指纹以比较同会话的请求差异">
+<span data-i18n="指纹追踪">指纹追踪</span>
 <div class="switch">
 <input id="trace-toggle" type="checkbox"/>
 <span class="slider"></span>
 </div>
-<span class="badge badge-gray" id="trace-status-text">加载中...</span>
-</label><button class="btn" id="reload-btn" title="重新加载并同步当前配置"><svg aria-hidden="true" class="icon"><use href="#i-refresh"></use></svg><span>重载配置</span></button></div></section><div class="status-strip" id="status-summary">
-<div class="status-item" title="CPA请求拦截挂载状态：未开启追踪时将零拷贝忽略Body">
-<span>采集状态</span>
+<span class="badge badge-gray" data-i18n="加载中..." id="trace-status-text">加载中...</span>
+</label><button class="btn" data-i18n-attr-title="重新加载并同步当前配置" id="reload-btn" title="重新加载并同步当前配置"><svg aria-hidden="true" class="icon"><use href="#i-refresh"></use></svg><span data-i18n="重载配置">重载配置</span></button></div></section><div class="status-strip" id="status-summary">
+<div class="status-item" data-i18n-attr-title="CPA请求拦截挂载状态：未开启追踪时将零拷贝忽略Body" title="CPA请求拦截挂载状态：未开启追踪时将零拷贝忽略Body">
+<span data-i18n="采集状态">采集状态</span>
 <strong id="stat-omit-body">-</strong>
 </div>
-<div class="status-item" title="磁盘占用 / 上限">
-<span>存储用量</span>
+<div class="status-item" data-i18n-attr-title="磁盘占用 / 上限" title="磁盘占用 / 上限">
+<span data-i18n="存储用量">存储用量</span>
 <strong id="stat-disk-usage">-</strong>
 </div>
-<div class="status-item" title="记录数与持久化文件数">
-<span>累计记录</span>
+<div class="status-item" data-i18n-attr-title="记录数与持久化文件数" title="记录数与持久化文件数">
+<span data-i18n="累计记录">累计记录</span>
 <strong id="stat-record-count">-</strong>
 </div>
 </div>
@@ -739,45 +743,45 @@ select,input[type=text],input[type=number],input[type=password]{background:var(-
 <div class="filter-group">
 <!-- Time Range Selector -->
 <div class="range-selector" id="range-selector">
-<button class="range-btn active" data-range="today">今日</button>
-<button class="range-btn" data-range="yesterday">昨日</button>
-<button class="range-btn" data-range="1h">1小时</button>
-<button class="range-btn" data-range="24h">24小时</button>
-<button class="range-btn" data-range="7d">7天</button>
-<button class="range-btn" data-range="14d">14天</button>
-<button class="range-btn" data-range="30d">30天</button>
+<button class="range-btn active" data-i18n="今日" data-range="today">今日</button>
+<button class="range-btn" data-i18n="昨日" data-range="yesterday">昨日</button>
+<button class="range-btn" data-i18n="1小时" data-range="1h">1小时</button>
+<button class="range-btn" data-i18n="24小时" data-range="24h">24小时</button>
+<button class="range-btn" data-i18n="7天" data-range="7d">7天</button>
+<button class="range-btn" data-i18n="14天" data-range="14d">14天</button>
+<button class="range-btn" data-i18n="30天" data-range="30d">30天</button>
 </div>
 <!-- Kind selector -->
-<select id="kind-select" title="记录类型">
-<option selected="" value="main">主调用 (main)</option>
-<option value="all">全部类型 (all)</option>
-<option value="compact">压缩轮次 (compact)</option>
-<option value="internal_subcall">内部子调用</option>
-<option value="non_generate">非生成调用</option>
+<select data-i18n-attr-title="记录类型" id="kind-select" title="记录类型">
+<option data-i18n="主调用 (main)" selected="" value="main">主调用 (main)</option>
+<option data-i18n="全部类型 (all)" value="all">全部类型 (all)</option>
+<option data-i18n="压缩轮次 (compact)" value="compact">压缩轮次 (compact)</option>
+<option data-i18n="内部子调用" value="internal_subcall">内部子调用</option>
+<option data-i18n="非生成调用" value="non_generate">非生成调用</option>
 </select>
 <!-- Model filter -->
-<select aria-label="按模型筛选" id="model-select">
-<option value="">全部模型 (All Models)</option>
+<select aria-label="按模型筛选" data-i18n-attr-aria-label="按模型筛选" id="model-select">
+<option data-i18n="全部模型 (All Models)" value="">全部模型 (All Models)</option>
 </select>
 <!-- Provider filter -->
-<select aria-label="按提供商筛选" id="provider-select">
-<option value="">全部提供商 (All Providers)</option>
+<select aria-label="按提供商筛选" data-i18n-attr-aria-label="按提供商筛选" id="provider-select">
+<option data-i18n="全部提供商 (All Providers)" value="">全部提供商 (All Providers)</option>
 </select>
 <!-- Status filter -->
-<select aria-label="按请求状态筛选" id="status-select">
-<option value="all">全部状态</option>
-<option value="hit">仅命中 (Hit)</option>
-<option value="miss">仅未命中 (Miss)</option>
-<option value="failed">执行失败 (Failed)</option>
+<select aria-label="按请求状态筛选" data-i18n-attr-aria-label="按请求状态筛选" id="status-select">
+<option data-i18n="全部状态" value="all">全部状态</option>
+<option data-i18n="仅命中 (Hit)" value="hit">仅命中 (Hit)</option>
+<option data-i18n="仅未命中 (Miss)" value="miss">仅未命中 (Miss)</option>
+<option data-i18n="执行失败 (Failed)" value="failed">执行失败 (Failed)</option>
 </select>
 </div>
 <div class="filter-group">
-<input aria-label="搜索请求记录" id="search-input" placeholder="搜索请求、会话或 Trace ID" style="width: 220px;" type="text"/>
+<input aria-label="搜索请求记录" data-i18n-attr-aria-label="搜索请求记录" data-i18n-attr-placeholder="搜索请求、会话或 Trace ID" id="search-input" placeholder="搜索请求、会话或 Trace ID" style="width: 220px;" type="text"/>
 <label style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--text-muted);cursor:pointer;">
 <input checked="" id="autorefresh-toggle" type="checkbox"/>
-<span>自动刷新 (10s)</span>
+<span data-i18n="自动刷新 (10s)">自动刷新 (10s)</span>
 </label>
-<button class="btn btn-primary btn-sm" id="refresh-btn">刷新数据</button>
+<button class="btn btn-primary btn-sm" data-i18n="刷新数据" id="refresh-btn">刷新数据</button>
 </div>
 </section>
 <!-- KPI Cards Grid -->
@@ -785,17 +789,17 @@ select,input[type=text],input[type=number],input[type=password]{background:var(-
 <!-- 1. Token Hit Rate -->
 <div class="kpi-card metric-1">
 <div class="kpi-title">
-<span>Token 命中率</span>
-<span class="badge badge-primary kpi-caption">缓存读取占比</span>
+<span data-i18n="Token 命中率">Token 命中率</span>
+<span class="badge badge-primary kpi-caption" data-i18n="缓存读取占比">缓存读取占比</span>
 </div>
 <div class="kpi-value" id="kpi-token-hit-rate">0.0%</div>
 <div class="kpi-sub">
 <div class="kpi-sub-row">
-<span>缓存读取:</span>
+<span data-i18n="缓存读取:">缓存读取:</span>
 <strong id="kpi-cache-read-tokens">0</strong>
 </div>
 <div class="kpi-sub-row">
-<span>有效输入:</span>
+<span data-i18n="有效输入:">有效输入:</span>
 <strong id="kpi-effective-input-tokens">0</strong>
 </div>
 </div>
@@ -803,17 +807,17 @@ select,input[type=text],input[type=number],input[type=password]{background:var(-
 <!-- 2. Request Hit Rate -->
 <div class="kpi-card metric-2">
 <div class="kpi-title">
-<span>请求命中率</span>
-<span class="badge badge-success kpi-caption">Hit 请求数</span>
+<span data-i18n="请求命中率">请求命中率</span>
+<span class="badge badge-success kpi-caption" data-i18n="Hit 请求数">Hit 请求数</span>
 </div>
 <div class="kpi-value" id="kpi-request-hit-rate">0.0%</div>
 <div class="kpi-sub">
 <div class="kpi-sub-row">
-<span>命中请求:</span>
+<span data-i18n="命中请求:">命中请求:</span>
 <strong id="kpi-hit-requests">0</strong>
 </div>
 <div class="kpi-sub-row">
-<span>总请求数:</span>
+<span data-i18n="总请求数:">总请求数:</span>
 <strong id="kpi-total-requests">0</strong>
 </div>
 </div>
@@ -821,17 +825,17 @@ select,input[type=text],input[type=number],input[type=password]{background:var(-
 <!-- 3. Token Breakdown -->
 <div class="kpi-card metric-3">
 <div class="kpi-title">
-<span>有效输入</span>
-<span class="badge badge-gray kpi-caption">上下文记账</span>
+<span data-i18n="有效输入">有效输入</span>
+<span class="badge badge-gray kpi-caption" data-i18n="上下文记账">上下文记账</span>
 </div>
 <div class="kpi-value" id="kpi-total-tokens-short">0</div>
 <div class="kpi-sub">
 <div class="kpi-sub-row">
-<span>缓存写入 (Write):</span>
+<span data-i18n="缓存写入 (Write):">缓存写入 (Write):</span>
 <strong id="kpi-cache-write-tokens">0</strong>
 </div>
 <div class="kpi-sub-row">
-<span>未命中输入 (Uncached):</span>
+<span data-i18n="未命中输入 (Uncached):">未命中输入 (Uncached):</span>
 <strong id="kpi-uncached-tokens">0</strong>
 </div>
 </div>
@@ -839,17 +843,17 @@ select,input[type=text],input[type=number],input[type=password]{background:var(-
 <!-- 4. Cold vs Warm -->
 <div class="kpi-card metric-4">
 <div class="kpi-title">
-<span>暖请求命中率</span>
-<span class="badge badge-warning kpi-caption">首轮与续接</span>
+<span data-i18n="暖请求命中率">暖请求命中率</span>
+<span class="badge badge-warning kpi-caption" data-i18n="首轮与续接">首轮与续接</span>
 </div>
 <div class="kpi-value" id="kpi-warm-hit-rate">0.0%</div>
 <div class="kpi-sub">
 <div class="kpi-sub-row">
-<span>冷启动首轮:</span>
-<strong id="kpi-cold-starts">0 (命中 0%)</strong>
+<span data-i18n="冷启动首轮:">冷启动首轮:</span>
+<strong data-i18n="0 (命中 0%)" id="kpi-cold-starts">0 (命中 0%)</strong>
 </div>
 <div class="kpi-sub-row">
-<span>暖会话续接:</span>
+<span data-i18n="暖会话续接:">暖会话续接:</span>
 <strong id="kpi-warm-requests">0</strong>
 </div>
 </div>
@@ -857,48 +861,48 @@ select,input[type=text],input[type=number],input[type=password]{background:var(-
 <!-- 5. Latency & TTFT -->
 <div class="kpi-card metric-5">
 <div class="kpi-title">
-<span>平均响应时间</span>
-<span class="badge badge-primary kpi-caption">平均响应</span>
+<span data-i18n="平均响应时间">平均响应时间</span>
+<span class="badge badge-primary kpi-caption" data-i18n="平均响应">平均响应</span>
 </div>
 <div class="kpi-value" id="kpi-avg-latency">0 ms</div>
 <div class="kpi-sub">
 <div class="kpi-sub-row">
-<span>平均首字延迟 (TTFT):</span>
+<span data-i18n="平均首字延迟 (TTFT):">平均首字延迟 (TTFT):</span>
 <strong id="kpi-avg-ttft">0 ms</strong>
 </div>
 <div class="kpi-sub-row">
-<span>失败请求数:</span>
+<span data-i18n="失败请求数:">失败请求数:</span>
 <strong id="kpi-failed-requests" style="color:var(--danger)">0</strong>
 </div>
 </div>
 </div>
-</section><section aria-label="缓存趋势与未命中分析" class="chart-layout"><section class="chart-card">
+</section><section aria-label="缓存趋势与未命中分析" class="chart-layout" data-i18n-attr-aria-label="缓存趋势与未命中分析"><section class="chart-card">
 <div class="chart-header">
 <div class="chart-title">
-<span>命中率趋势</span>
-<select aria-label="选择趋势模型" class="btn-sm" id="chart-model-select" style="margin-left: 10px;">
-<option value="">全部模型曲线 (Overall)</option>
+<span data-i18n="命中率趋势">命中率趋势</span>
+<select aria-label="选择趋势模型" class="btn-sm" data-i18n-attr-aria-label="选择趋势模型" id="chart-model-select" style="margin-left: 10px;">
+<option data-i18n="全部模型曲线 (Overall)" value="">全部模型曲线 (Overall)</option>
 </select>
 </div>
 <div class="chart-legend">
 <div class="legend-item">
 <span class="legend-color" style="background:#10b981;"></span>
-<span>Token 命中率 (%)</span>
+<span data-i18n="Token 命中率 (%)">Token 命中率 (%)</span>
 </div>
 <div class="legend-item">
 <span class="legend-color" style="background:rgba(59, 130, 246, 0.4);"></span>
-<span>请求量 (柱状)</span>
+<span data-i18n="请求量 (柱状)">请求量 (柱状)</span>
 </div>
 </div>
-</div><div class="section-description">观察缓存命中率与请求量的变化</div>
+</div><div class="section-description" data-i18n="观察缓存命中率与请求量的变化">观察缓存命中率与请求量的变化</div>
 <div class="chart-wrapper">
 <canvas id="trend-canvas"></canvas>
 <div class="chart-tooltip" id="chart-tooltip"></div>
 </div>
 </section><div class="panel-card reason-card">
-<div class="diff-section-title">未命中分析</div><p class="section-description">从请求差异中寻找线索</p>
+<div class="diff-section-title" data-i18n="未命中分析">未命中分析</div><p class="section-description" data-i18n="从请求差异中寻找线索">从请求差异中寻找线索</p>
 <div id="miss-reasons-list" style="display:flex;flex-direction:column;gap:10px;">
-<div class="empty-state">暂无未命中分析</div>
+<div class="empty-state" data-i18n="暂无未命中分析">暂无未命中分析</div>
 </div>
 </div></section>
 <!-- Trend Chart -->
@@ -906,23 +910,23 @@ select,input[type=text],input[type=number],input[type=password]{background:var(-
 <section class="analytics-grid" id="models">
 <!-- Model Breakdown Table -->
 <div class="panel-card model-card">
-<div class="diff-section-title">模型分析 <span class="heading-note">点击模型以筛选</span></div>
+<div class="diff-section-title"><span data-i18n="模型分析">模型分析</span><span class="heading-note" data-i18n="点击模型以筛选">点击模型以筛选</span></div>
 <div class="table-responsive">
 <table>
 <thead>
 <tr>
-<th>模型 (Display Model)</th>
-<th>提供商</th>
-<th>请求数</th>
-<th>命中数</th>
-<th>Token 命中率</th>
-<th>请求命中率</th>
-<th>缓存读取</th>
-<th>有效输入</th>
+<th data-i18n="模型 (Display Model)">模型 (Display Model)</th>
+<th data-i18n="提供商">提供商</th>
+<th data-i18n="请求数">请求数</th>
+<th data-i18n="命中数">命中数</th>
+<th data-i18n="Token 命中率">Token 命中率</th>
+<th data-i18n="请求命中率">请求命中率</th>
+<th data-i18n="缓存读取">缓存读取</th>
+<th data-i18n="有效输入">有效输入</th>
 </tr>
 </thead>
 <tbody id="models-table-body">
-<tr><td class="empty-state" colspan="8">暂无模型数据</td></tr>
+<tr><td class="empty-state" colspan="8" data-i18n="暂无模型数据">暂无模型数据</td></tr>
 </tbody>
 </table>
 </div>
@@ -932,13 +936,13 @@ select,input[type=text],input[type=number],input[type=password]{background:var(-
 <!-- Request Records Table -->
 <section class="panel-card" id="requests">
 <div style="display:flex;justify-content:space-between;align-items:center;">
-<div class="diff-section-title">请求记录 <span class="heading-note">选择记录，比较前后轮次</span></div>
+<div class="diff-section-title"><span data-i18n="请求记录">请求记录</span><span class="heading-note" data-i18n="选择记录，比较前后轮次">选择记录，比较前后轮次</span></div>
 <div style="display:flex;gap:8px;align-items:center;">
-<span id="records-total-hint" style="font-size:12px;color:var(--text-dim);">共 0 条记录</span>
-<select aria-label="每页记录数" class="btn-sm" id="records-limit-select">
-<option value="25">25 条/页</option>
-<option selected="" value="50">50 条/页</option>
-<option value="100">100 条/页</option>
+<span data-i18n="共 0 条记录" id="records-total-hint" style="font-size:12px;color:var(--text-dim);">共 0 条记录</span>
+<select aria-label="每页记录数" class="btn-sm" data-i18n-attr-aria-label="每页记录数" id="records-limit-select">
+<option data-i18n="25 条/页" value="25">25 条/页</option>
+<option data-i18n="50 条/页" selected="" value="50">50 条/页</option>
+<option data-i18n="100 条/页" value="100">100 条/页</option>
 </select>
 </div>
 </div>
@@ -946,27 +950,27 @@ select,input[type=text],input[type=number],input[type=password]{background:var(-
 <table>
 <thead>
 <tr>
-<th>时间</th>
-<th>状态</th>
-<th>模型</th>
-<th>会话标识</th>
-<th>缓存读取 / 输入</th>
-<th>响应 / 首字延迟</th>
-<th>未命中原因</th>
-<th>类型</th>
-<th>操作</th>
+<th data-i18n="时间">时间</th>
+<th data-i18n="状态">状态</th>
+<th data-i18n="模型">模型</th>
+<th data-i18n="会话标识">会话标识</th>
+<th data-i18n="缓存读取 / 输入">缓存读取 / 输入</th>
+<th data-i18n="响应 / 首字延迟">响应 / 首字延迟</th>
+<th data-i18n="未命中原因">未命中原因</th>
+<th data-i18n="类型">类型</th>
+<th data-i18n="操作">操作</th>
 </tr>
 </thead>
 <tbody id="records-table-body">
-<tr><td class="empty-state" colspan="9">暂无请求记录</td></tr>
+<tr><td class="empty-state" colspan="9" data-i18n="暂无请求记录">暂无请求记录</td></tr>
 </tbody>
 </table>
 </div>
 <!-- Pagination -->
 <div class="pagination">
-<button class="btn btn-sm" disabled="" id="prev-page-btn">上一页</button>
-<span id="page-info">第 1 页</span>
-<button class="btn btn-sm" disabled="" id="next-page-btn">下一页</button>
+<button class="btn btn-sm" data-i18n="上一页" disabled="" id="prev-page-btn">上一页</button>
+<span data-i18n="第 1 页" id="page-info">第 1 页</span>
+<button class="btn btn-sm" data-i18n="下一页" disabled="" id="next-page-btn">下一页</button>
 </div>
 </section>
 </main>
@@ -974,56 +978,56 @@ select,input[type=text],input[type=number],input[type=password]{background:var(-
 <div class="drawer-backdrop" id="drawer-backdrop"></div>
 <aside class="drawer" id="diff-drawer">
 <div class="drawer-header">
-<div class="drawer-title">会话请求对比</div>
-<button class="btn btn-sm" id="drawer-close-btn">✕ 关闭</button>
+<div class="drawer-title" data-i18n="会话请求对比">会话请求对比</div>
+<button class="btn btn-sm" data-i18n="✕ 关闭" id="drawer-close-btn">✕ 关闭</button>
 </div>
 <div class="drawer-body" id="drawer-body">
-<div class="empty-state">正在加载 Diff 详情...</div>
+<div class="empty-state" data-i18n="正在加载 Diff 详情...">正在加载 Diff 详情...</div>
 </div>
 </aside>
 <!-- Settings & Retention Modal -->
 <div class="modal-backdrop" id="settings-modal-backdrop">
 <div class="modal">
-<div class="modal-title">设置与数据保留</div>
+<div class="modal-title" data-i18n="设置与数据保留">设置与数据保留</div>
 <div class="form-group">
-<label>保留天数 (retention_days，0 表示永久保留):</label>
+<label data-i18n="保留天数 (retention_days，0 表示永久保留):">保留天数 (retention_days，0 表示永久保留):</label>
 <input id="setting-retention-days" min="0" type="number" value="14"/>
 </div>
 <div class="form-group">
-<label>最大磁盘占用上限 (max_disk_mb，MB):</label>
+<label data-i18n="最大磁盘占用上限 (max_disk_mb，MB):">最大磁盘占用上限 (max_disk_mb，MB):</label>
 <input id="setting-max-disk-mb" min="10" type="number" value="200"/>
 </div>
 <div class="form-group">
-<label>最大消息哈希截断数 (max_message_hashes):</label>
+<label data-i18n="最大消息哈希截断数 (max_message_hashes):">最大消息哈希截断数 (max_message_hashes):</label>
 <input id="setting-max-message-hashes" min="16" type="number" value="512"/>
 </div>
 <div style="border-top:1px solid var(--border-normal);padding-top:12px;margin-top:4px;">
-<div style="font-weight:600;font-size:12px;margin-bottom:8px;color:#f87171;">数据清理操作</div>
+<div data-i18n="数据清理操作" style="font-weight:600;font-size:12px;margin-bottom:8px;color:#f87171;">数据清理操作</div>
 <div style="display:flex;gap:10px;">
-<button class="btn btn-sm" id="purge-expired-btn">🧹 清理过期数据</button>
-<button class="btn btn-sm btn-danger" id="purge-all-btn">⚠️ 清空全部数据</button>
+<button class="btn btn-sm" data-i18n="🧹 清理过期数据" id="purge-expired-btn">🧹 清理过期数据</button>
+<button class="btn btn-sm btn-danger" data-i18n="⚠️ 清空全部数据" id="purge-all-btn">⚠️ 清空全部数据</button>
 </div>
 </div>
 <div class="modal-actions">
-<button class="btn" id="settings-cancel-btn">取消</button>
-<button class="btn btn-primary" id="settings-save-btn">保存配置</button>
+<button class="btn" data-i18n="取消" id="settings-cancel-btn">取消</button>
+<button class="btn btn-primary" data-i18n="保存配置" id="settings-save-btn">保存配置</button>
 </div>
 </div>
 </div>
 <!-- Auth Key Modal -->
 <div class="modal-backdrop" id="auth-modal-backdrop">
 <div class="modal">
-<div class="modal-title">CPA 管理凭据设置</div>
-<div style="font-size:12px;color:var(--text-muted);">
+<div class="modal-title" data-i18n="CPA 管理凭据设置">CPA 管理凭据设置</div>
+<div data-i18n="请输入 CPA 管理密钥 (Management Key)。此密钥仅保存在当前浏览器 sessionStorage 中，不会泄露或外传。" style="font-size:12px;color:var(--text-muted);">
         请输入 CPA 管理密钥 (Management Key)。此密钥仅保存在当前浏览器 sessionStorage 中，不会泄露或外传。
       </div>
 <div class="form-group">
 <label>Management Key:</label>
-<input id="auth-key-input" placeholder="输入 Bearer 管理密钥" type="password"/>
+<input data-i18n-attr-placeholder="输入 Bearer 管理密钥" id="auth-key-input" placeholder="输入 Bearer 管理密钥" type="password"/>
 </div>
 <div class="modal-actions">
-<button class="btn" id="auth-cancel-btn">取消</button>
-<button class="btn btn-primary" id="auth-save-btn">保存并连接</button>
+<button class="btn" data-i18n="取消" id="auth-cancel-btn">取消</button>
+<button class="btn btn-primary" data-i18n="保存并连接" id="auth-save-btn">保存并连接</button>
 </div>
 </div>
 </div>
@@ -1053,6 +1057,41 @@ select,input[type=text],input[type=number],input[type=password]{background:var(-
         autoRefreshInterval: null,
         isPollingConfig: false,
       };
+
+
+      const english = {"缓存概览":"Cache overview","模型分析":"Models","请求记录":"Requests","存储与保留":"Storage & retention","管理凭据":"Credentials","监控工作台":"Dashboard","工作区":"Workspace","本地工作区":"Local workspace","数据保存在本机":"Data stays on this device","缓存监控":"Cache monitoring","实时观测":"Live monitoring","设置":"Settings","查看每一次请求的缓存表现，快速定位未命中原因。":"Monitor cache performance and investigate misses.","指纹追踪":"Fingerprint tracing","加载中...":"Loading...","重载配置":"Reload config","采集状态":"Collection","存储用量":"Storage","累计记录":"Records","今日":"Today","昨日":"Yesterday","1小时":"1 hour","24小时":"24 hours","7天":"7 days","14天":"14 days","30天":"30 days","主调用 (main)":"Main calls","全部类型 (all)":"All call types","压缩轮次 (compact)":"Compaction","内部子调用":"Internal calls","非生成调用":"Non-generation calls","全部模型 (All Models)":"All models","全部提供商 (All Providers)":"All providers","全部状态":"All statuses","仅命中 (Hit)":"Hits","仅未命中 (Miss)":"Misses","执行失败 (Failed)":"Failed","自动刷新 (10s)":"Auto-refresh (10s)","刷新数据":"Refresh","Token 命中率":"Token hit rate","缓存读取占比":"Cache read / input","缓存读取:":"Cache read:","有效输入:":"Effective input:","请求命中率":"Request hit rate","Hit 请求数":"Requests with cache hits","命中请求:":"Hits:","总请求数:":"Total requests:","有效输入":"Effective input","上下文记账":"Input breakdown","缓存写入 (Write):":"Cache write:","未命中输入 (Uncached):":"Uncached input:","暖请求命中率":"Warm request hit rate","首轮与续接":"Cold vs. warm","冷启动首轮:":"Cold starts:","暖会话续接:":"Warm requests:","0 (命中 0%)":"0 (0% hit rate)","平均响应时间":"Average latency","平均响应":"Response time","平均首字延迟 (TTFT):":"Average TTFT:","失败请求数:":"Failed requests:","命中率趋势":"Cache hit trend","全部模型曲线 (Overall)":"All models","Token 命中率 (%)":"Token hit rate (%)","请求量 (柱状)":"Requests","观察缓存命中率与请求量的变化":"Cache hit rate and request volume over time","未命中分析":"Miss analysis","从请求差异中寻找线索":"Investigate differences between requests","暂无未命中分析":"No miss analysis","点击模型以筛选":"Select a model to filter","模型 (Display Model)":"Model","提供商":"Provider","请求数":"Requests","命中数":"Hits","缓存读取":"Cache read","暂无模型数据":"No model data","选择记录，比较前后轮次":"Select a request to compare with its predecessor","共 0 条记录":"0 records","25 条/页":"25 / page","50 条/页":"50 / page","100 条/页":"100 / page","时间":"Time","状态":"Status","模型":"Model","会话标识":"Session","缓存读取 / 输入":"Cache read / input","响应 / 首字延迟":"Latency / TTFT","未命中原因":"Miss reason","类型":"Type","操作":"Action","暂无请求记录":"No requests","上一页":"Previous","下一页":"Next","第 1 页":"Page 1","会话请求对比":"Session comparison","✕ 关闭":"✕ Close","正在加载 Diff 详情...":"Loading comparison...","设置与数据保留":"Settings & retention","保留天数 (retention_days，0 表示永久保留):":"Retention days (0 means no age limit):","最大磁盘占用上限 (max_disk_mb，MB):":"Maximum disk usage (MB):","最大消息哈希截断数 (max_message_hashes):":"Maximum message hashes:","数据清理操作":"Data cleanup","🧹 清理过期数据":"Clear expired data","⚠️ 清空全部数据":"Delete all data","取消":"Cancel","保存配置":"Save settings","CPA 管理凭据设置":"CPA management credentials","请输入 CPA 管理密钥 (Management Key)。此密钥仅保存在当前浏览器 sessionStorage 中，不会泄露或外传。":"Enter the CPA management key. It is stored only in this browser session.","保存并连接":"Save and connect","主导航":"Main navigation","设置保留周期与存储上限":"Set retention and disk limits","查看或更新管理密钥":"View or update management credentials","开启内容指纹以比较同会话的请求差异":"Enable fingerprinting to compare requests within a session","重新加载并同步当前配置":"Reload and synchronize configuration","CPA请求拦截挂载状态：未开启追踪时将零拷贝忽略Body":"Request interception status; request bodies are omitted when tracing is off","磁盘占用 / 上限":"Disk usage / limit","记录数与持久化文件数":"Records and storage files","记录类型":"Call type","按模型筛选":"Filter by model","按提供商筛选":"Filter by provider","按请求状态筛选":"Filter by status","搜索请求、会话或 Trace ID":"Search request, session or trace ID","搜索请求记录":"Search requests","缓存趋势与未命中分析":"Cache trend and miss analysis","选择趋势模型":"Select model for trend","每页记录数":"Records per page","输入 Bearer 管理密钥":"Enter management key","已开启":"On","已关闭":"Off","仅采集用量":"Usage only","指纹与用量":"Fingerprints and usage","当前时段没有未命中请求":"No misses in this period","等待请求数据":"Waiting for request data","暂无模型统计数据":"No model statistics","未匹配到任何请求记录":"No matching requests","命中":"Hit","未命中":"Miss","失败":"Failed","查看对比 →":"Compare →","会话首轮冷启动":"Session cold start","历史对话前缀变更":"Conversation prefix changed","上游账号切换":"Upstream account changed","系统提示词变更":"System prompt changed","工具声明变更":"Tools changed","指纹追踪未启用":"Fingerprint tracing disabled","历史对话缩短":"Conversation history shortened","请求参数变更":"Request options changed","模型切换":"Model changed","上游缓存未命中":"Upstream cache miss","当前选定时段暂无请求时序数据":"No trend data for this period","正在加载 Diff 数据...":"Loading comparison...","加载 Diff 失败 (HTTP ":"Could not load comparison (HTTP ","Diff 请求异常: ":"Comparison request failed: ","未找到对应记录详情":"Record details not found","诊断归因与原因分析":"Diagnosis","轮次元数据对比 (Current vs Previous)":"Request metadata: current vs. previous","当前记录 ID":"Current record ID","前序记录 ID":"Previous record ID","(无前序，会话首轮)":"(No previous request; first turn)","当前时间":"Current time","前序时间":"Previous time","前序模型":"Previous model","会话标识 (Session Key)":"Session key","上游 Auth ID":"Upstream auth ID","账号切换":"Account changed","消息结构对齐指标":"Message alignment","相同前缀消息: ":"Matching prefix messages: "," 轮":" turns","✅ 严格仅追加 (Append-Only)":"✅ Append-only","⚠️ 前缀已分叉":"⚠️ Prefix diverged","❌ 上游账号已轮换":"❌ Upstream account changed","⚠️ 哈希序列超过上限已截断":"⚠️ Hash sequence truncated","变更顶层字段: ":"Changed fields: ","变更模型参数 (Options): ":"Changed options: ","消息哈希序列对比 (严格内容无害化摘要)":"Message hash comparison","绿色表示前序会话前缀完全匹配，黄色为首次分叉消息，蓝色为当前轮次新追加消息。":"Green: matching prefix. Yellow: first divergence. Blue: appended messages.","未提取到消息哈希指纹 (trace_enabled 可能未开启)":"No message fingerprints (tracing may be disabled)","新增轮次 (Appended)":"Appended","完全匹配 (Matched)":"Matched","前缀分叉点 (Diverged)":"Diverged","这是当前会话在监测期内的首轮交互（冷启动）。主流 LLM 提供商仅在后续且携带相同历史前缀的请求中提供缓存命中优惠。":"This is the first observed request in the session (cold start). Later requests can reuse matching cached prefixes.","检测到上游提供商认证账号 (AuthID) 发生切换！LLM 提供商的 Prompt Cache 是与 API Key / 租户强绑定的，跨凭据无法命中上一个账号已建立的缓存。":"The upstream account changed. Cache entries are typically scoped to the original credential or tenant.","检测到系统提示词 (System Prompt) 发生了变更。系统提示词位于整个对话的最前端，一旦更改将导致全量历史缓存失效。":"The system prompt changed, altering the beginning of the request prefix.","检测到工具定义 (Tools/Function Definitions) 发生了变更，导致前置结构变化，无法复用上轮缓存。":"Tool definitions changed, altering the request prefix.","历史消息前缀已被编辑或缩减（分叉位于第 ":"The conversation prefix was edited or shortened (divergence at message "," 轮消息）。提供商无法匹配已有前缀，需要重新对分叉后的内容计算全量上下文。":"). The provider must process the changed portion again.","缓存成功命中！历史前缀保持一致，上游成功复用了已有 KV 缓存。":"Cache hit: the upstream provider reused the matching prefix.","请求前缀结构保持一致，但上游提供商未返回命中 Token。可能由于上游提供商缓存生命周期到期（TTL 超时），或上游节点负载较高导致缓存被驱逐。":"The prefix appears unchanged, but no cache hit was reported. The upstream cache may have expired or been evicted.","正在同步...":"Synchronizing...","PATCH config 失败: HTTP ":"Configuration update failed: HTTP ","运行时指纹追踪状态已更新为: ":"Fingerprint tracing updated: ","配置已提交，但挂载状态同步超时":"Configuration saved, but runtime synchronization timed out","更新配置失败: ":"Could not update configuration: ","正在重载插件配置...":"Reloading configuration...","读取配置失败: HTTP ":"Could not read configuration: HTTP ","配置已重载并与宿主进程同步！":"Configuration reloaded and synchronized.","配置已提交，运行时同步仍在等待中":"Configuration saved; waiting for runtime synchronization","重载配置异常: ":"Could not reload configuration: ","保留配置已保存":"Retention settings saved","保存配置失败: ":"Could not save settings: ","确认清空所有追踪记录吗？此操作无法撤销！":"Delete all tracking records? This cannot be undone.","确认清理所有过期数据吗？":"Delete expired records?","清理完成！已删除 ":"Cleanup complete. Deleted "," 条记录 (":" records ("," 个文件)":" files)","清理失败: ":"Cleanup failed: ","管理凭据已更新":"Management credentials updated","管理认证失败，请检查密钥后重新连接":"Authentication failed. Check the management key and reconnect.","请输入有效的管理密钥后连接":"Enter a valid management key to connect","共 ":""," 条记录":" records","第 ":"Page "," 页":""," 条 · ":" records · "," 个文件":" files"," 次 (":" requests ("," 次":" requests"," (命中 ":" (hit rate ","Token 命中率: ":"Token hit rate: ","请求命中率: ":"Request hit rate: ","请求量: ":"Requests: ","读取 Tokens: ":"Cache read: "};
+      let language = "zh";
+      try { if (localStorage.getItem("cpa-cache-tracker-language") === "en") language = "en"; } catch (_) {}
+      function tr(text) { return language === "en" ? (english[text] ?? text) : text; }
+      function applyLanguage() {
+        document.documentElement.lang = language === "en" ? "en" : "zh-CN";
+        document.title = language === "en" ? "Cache Tracker - Dashboard" : "Cache Tracker - CPA 缓存追踪看板";
+        document.querySelectorAll("[data-i18n]").forEach(el => { el.textContent = tr(el.dataset.i18n); });
+        ["title", "placeholder", "aria-label"].forEach(attr => {
+          document.querySelectorAll("[data-i18n-attr-" + attr + "]").forEach(el => {
+            el.setAttribute(attr, tr(el.getAttribute("data-i18n-attr-" + attr)));
+          });
+        });
+        const selector = document.getElementById("language-select");
+        if (selector) selector.value = language;
+        renderStatus();
+        renderSummary();
+        if (state.recordItems) renderRecordsTable(state.recordItems);
+        if (state.recordItems) renderPagination();
+        const drawer = document.getElementById("diff-drawer");
+        const body = document.getElementById("drawer-body");
+        if (drawer?.classList.contains("open") && body && state.currentDiff) renderDiffContent(body, state.currentDiff);
+        drawChart();
+      }
+      function setupLanguage() {
+        const selector = document.getElementById("language-select");
+        if (selector) selector.addEventListener("change", () => {
+          language = selector.value === "en" ? "en" : "zh";
+          try { localStorage.setItem("cpa-cache-tracker-language", language); } catch (_) {}
+          applyLanguage();
+        });
+        applyLanguage();
+      }
 
       // Helper: DOM creation without innerHTML
       function el(tag, attrs, ...children) {
@@ -1191,7 +1230,7 @@ select,input[type=text],input[type=number],input[type=password]{background:var(-
 
       async function apiFetch(path, options = {}) {
         if (!state.authKey || state.authBlocked) {
-          openAuthModal("请输入有效的管理密钥后连接");
+          openAuthModal(tr("请输入有效的管理密钥后连接"));
           throw new Error("Management authentication required");
         }
         options.headers = Object.assign({}, getAuthHeaders(), options.headers || {});
@@ -1201,7 +1240,7 @@ select,input[type=text],input[type=number],input[type=password]{background:var(-
             state.authBlocked = true;
             stopAutoRefresh();
             const detail = await resp.json().catch(() => ({}));
-            openAuthModal(detail.error || "管理认证失败，请检查密钥后重新连接");
+            openAuthModal(detail.error || tr("管理认证失败，请检查密钥后重新连接"));
             throw new Error("HTTP " + resp.status + " Management authentication failed");
           }
           return resp;
@@ -1260,6 +1299,7 @@ select,input[type=text],input[type=number],input[type=password]{background:var(-
           const resp = await apiFetch("/v0/management/plugins/cpa-cache-tracker/records?" + params.toString());
           if (!resp.ok) return;
           const data = await resp.json();
+          state.recordItems = data.items || [];
           state.recordsTotal = data.total || 0;
           renderRecordsTable(data.items || []);
           renderPagination();
@@ -1280,14 +1320,14 @@ select,input[type=text],input[type=number],input[type=password]{background:var(-
           toggle.checked = Boolean(st.trace_enabled);
         }
         if (statusText) {
-          statusText.textContent = st.trace_enabled ? "已开启" : "已关闭";
+          statusText.textContent = st.trace_enabled ? tr("已开启") : tr("已关闭");
           statusText.className = "badge " + (st.trace_enabled ? "badge-success" : "badge-gray");
         }
 
         // Summary pills
         const omitEl = document.getElementById("stat-omit-body");
         if (omitEl) {
-          omitEl.textContent = st.omit_body_after ? "仅采集用量" : "指纹与用量";
+          omitEl.textContent = st.omit_body_after ? tr("仅采集用量") : tr("指纹与用量");
           omitEl.style.color = st.omit_body_after ? "var(--warning)" : "var(--success)";
         }
 
@@ -1301,7 +1341,7 @@ select,input[type=text],input[type=number],input[type=password]{background:var(-
 
         const countEl = document.getElementById("stat-record-count");
         if (countEl) {
-          countEl.textContent = (st.record_count || 0) + " 条 · " + (st.file_count || 0) + " 个文件";
+          countEl.textContent = language === "en" ? (st.record_count || 0) + " records · " + (st.file_count || 0) + ((st.file_count || 0) === 1 ? " file" : " files") : (st.record_count || 0) + " 条 · " + (st.file_count || 0) + " 个文件";
         }
       }
 
@@ -1323,7 +1363,7 @@ select,input[type=text],input[type=number],input[type=password]{background:var(-
         safeSetText("kpi-uncached-tokens", formatNumber(t.uncached_input || 0));
 
         safeSetText("kpi-warm-hit-rate", (t.warm_hit_rate || 0).toFixed(1) + "%");
-        safeSetText("kpi-cold-starts", (t.cold_starts || 0) + " (命中 " + (t.cold_hit_rate || 0).toFixed(1) + "%)");
+        safeSetText("kpi-cold-starts", (t.cold_starts || 0) + tr(" (命中 ") + (t.cold_hit_rate || 0).toFixed(1) + "%)");
         safeSetText("kpi-warm-requests", formatNumber(t.warm_requests || 0));
 
         safeSetText("kpi-avg-latency", (t.avg_latency_ms || 0).toFixed(0) + " ms");
@@ -1335,7 +1375,7 @@ select,input[type=text],input[type=number],input[type=password]{background:var(-
         if (tbody) {
           while (tbody.firstChild) tbody.removeChild(tbody.firstChild);
           if (!sum.models || sum.models.length === 0) {
-            tbody.appendChild(el("tr", null, el("td", { colSpan: 8, className: "empty-state" }, "暂无模型统计数据")));
+            tbody.appendChild(el("tr", null, el("td", { colSpan: 8, className: "empty-state" }, tr("暂无模型统计数据"))));
           } else {
             sum.models.forEach(m => {
               const isSelected = state.currentModel === m.display_model;
@@ -1362,7 +1402,7 @@ select,input[type=text],input[type=number],input[type=password]{background:var(-
         if (mrContainer) {
           while (mrContainer.firstChild) mrContainer.removeChild(mrContainer.firstChild);
           if (!sum.miss_reasons || sum.miss_reasons.length === 0) {
-            mrContainer.appendChild(el("div", { className: "empty-state" }, t.requests > 0 ? "当前时段没有未命中请求" : "等待请求数据"));
+            mrContainer.appendChild(el("div", { className: "empty-state" }, t.requests > 0 ? tr("当前时段没有未命中请求") : tr("等待请求数据")));
           } else {
             const maxCount = Math.max(...sum.miss_reasons.map(r => r.count || 1));
             sum.miss_reasons.forEach(r => {
@@ -1371,7 +1411,7 @@ select,input[type=text],input[type=number],input[type=password]{background:var(-
               const row = el("div", { style: { display: "flex", flexDirection: "column", gap: "2px" } },
                 el("div", { style: { display: "flex", justifyContent: "space-between", fontSize: "12px" } },
                   el("span", null, label),
-                  el("strong", { className: "mono" }, r.count + " 次 (" + formatNumber(r.effective_input) + " tokens)")
+                  el("strong", { className: "mono" }, r.count + tr(" 次 (") + formatNumber(r.effective_input) + " tokens)")
                 ),
                 el("div", { className: "progress-bar-bg" },
                   el("div", { className: "progress-bar-fill", style: { width: pct + "%" } })
@@ -1385,20 +1425,20 @@ select,input[type=text],input[type=number],input[type=password]{background:var(-
 
       function formatMissReason(reason) {
         switch (reason) {
-          case "cold_start": return "会话首轮冷启动";
+          case "cold_start": return tr("会话首轮冷启动");
           case "prefix_modified":
-          case "prefix_diverged": return "历史对话前缀变更";
+          case "prefix_diverged": return tr("历史对话前缀变更");
           case "auth_switched":
-          case "auth_changed": return "上游账号切换";
+          case "auth_changed": return tr("上游账号切换");
           case "system_changed":
-          case "system_prompt_changed": return "系统提示词变更";
-          case "tools_changed": return "工具声明变更";
-          case "trace_disabled": return "指纹追踪未启用";
-          case "history_shortened": return "历史对话缩短";
-          case "options_changed": return "请求参数变更";
-          case "model_changed": return "模型切换";
-          case "upstream_cache_miss": return "上游缓存未命中";
-          default: return reason || "未命中";
+          case "system_prompt_changed": return tr("系统提示词变更");
+          case "tools_changed": return tr("工具声明变更");
+          case "trace_disabled": return tr("指纹追踪未启用");
+          case "history_shortened": return tr("历史对话缩短");
+          case "options_changed": return tr("请求参数变更");
+          case "model_changed": return tr("模型切换");
+          case "upstream_cache_miss": return tr("上游缓存未命中");
+          default: return reason || tr("未命中");
         }
       }
 
@@ -1467,7 +1507,7 @@ select,input[type=text],input[type=number],input[type=password]{background:var(-
         while (tbody.firstChild) tbody.removeChild(tbody.firstChild);
 
         if (!items || items.length === 0) {
-          tbody.appendChild(el("tr", null, el("td", { colSpan: 9, className: "empty-state" }, "未匹配到任何请求记录")));
+          tbody.appendChild(el("tr", null, el("td", { colSpan: 9, className: "empty-state" }, tr("未匹配到任何请求记录"))));
           return;
         }
 
@@ -1475,11 +1515,11 @@ select,input[type=text],input[type=number],input[type=password]{background:var(-
           const isHit = rec.tokens && (rec.tokens.request_hit || rec.tokens.cache_read > 0);
           let statusBadge;
           if (rec.failed) {
-            statusBadge = el("span", { className: "badge badge-danger" }, "失败");
+            statusBadge = el("span", { className: "badge badge-danger" }, tr("失败"));
           } else if (isHit) {
-            statusBadge = el("span", { className: "badge badge-success" }, "命中");
+            statusBadge = el("span", { className: "badge badge-success" }, tr("命中"));
           } else {
-            statusBadge = el("span", { className: "badge badge-gray" }, "未命中");
+            statusBadge = el("span", { className: "badge badge-gray" }, tr("未命中"));
           }
 
           const hitRate = (rec.tokens && rec.tokens.effective_input > 0)
@@ -1504,7 +1544,7 @@ select,input[type=text],input[type=number],input[type=password]{background:var(-
             el("td", null, el("button", { 
               className: "btn btn-sm",
               onclick: (e) => { e.stopPropagation(); openDiffDrawer(rec.id); }
-            }, "查看对比 →"))
+            }, tr("查看对比 →")))
           );
 
           tbody.appendChild(row);
@@ -1516,11 +1556,11 @@ select,input[type=text],input[type=number],input[type=password]{background:var(-
         const limit = state.recordsLimit;
         const offset = state.recordsOffset;
 
-        safeSetText("records-total-hint", "共 " + total + " 条记录");
+        safeSetText("records-total-hint", tr("共 ") + total + tr(" 条记录"));
 
         const curPage = Math.floor(offset / limit) + 1;
         const totalPages = Math.ceil(total / limit) || 1;
-        safeSetText("page-info", "第 " + curPage + " / " + totalPages + " 页");
+        safeSetText("page-info", tr("第 ") + curPage + " / " + totalPages + tr(" 页"));
 
         const prevBtn = document.getElementById("prev-page-btn");
         const nextBtn = document.getElementById("next-page-btn");
@@ -1558,7 +1598,7 @@ select,input[type=text],input[type=number],input[type=password]{background:var(-
           ctx.fillStyle = color("label");
           ctx.font = "13px -apple-system, sans-serif";
           ctx.textAlign = "center";
-          ctx.fillText("当前选定时段暂无请求时序数据", width / 2, height / 2);
+          ctx.fillText(tr("当前选定时段暂无请求时序数据"), width / 2, height / 2);
           return;
         }
 
@@ -1697,10 +1737,10 @@ select,input[type=text],input[type=number],input[type=password]{background:var(-
 
           while (tooltipEl.firstChild) tooltipEl.removeChild(tooltipEl.firstChild);
           tooltipEl.appendChild(el("div", { style: { fontWeight: "700", marginBottom: "4px" } }, pt.bucket));
-          tooltipEl.appendChild(el("div", null, "Token 命中率: " + (pt.token_hit_rate || 0).toFixed(1) + "%"));
-          tooltipEl.appendChild(el("div", null, "请求命中率: " + (pt.request_hit_rate || 0).toFixed(1) + "%"));
-          tooltipEl.appendChild(el("div", null, "请求量: " + formatNumber(pt.requests) + " 次"));
-          tooltipEl.appendChild(el("div", null, "读取 Tokens: " + formatNumber(pt.cache_read)));
+          tooltipEl.appendChild(el("div", null, tr("Token 命中率: ") + (pt.token_hit_rate || 0).toFixed(1) + "%"));
+          tooltipEl.appendChild(el("div", null, tr("请求命中率: ") + (pt.request_hit_rate || 0).toFixed(1) + "%"));
+          tooltipEl.appendChild(el("div", null, tr("请求量: ") + formatNumber(pt.requests) + tr(" 次")));
+          tooltipEl.appendChild(el("div", null, tr("读取 Tokens: ") + formatNumber(pt.cache_read)));
         });
 
         canvasEl.addEventListener("mouseleave", () => {
@@ -1715,23 +1755,25 @@ select,input[type=text],input[type=number],input[type=password]{background:var(-
         const body = document.getElementById("drawer-body");
         if (!drawer || !body) return;
 
+        state.currentDiff = null;
         drawer.classList.add("open");
         if (backdrop) backdrop.style.display = "block";
 
         while (body.firstChild) body.removeChild(body.firstChild);
-        body.appendChild(el("div", { className: "empty-state" }, "正在加载 Diff 数据..."));
+        body.appendChild(el("div", { className: "empty-state" }, tr("正在加载 Diff 数据...")));
 
         try {
           const resp = await apiFetch("/v0/management/plugins/cpa-cache-tracker/records/diff?id=" + encodeURIComponent(recordId));
           if (!resp.ok) {
-            body.appendChild(el("div", { className: "badge badge-danger" }, "加载 Diff 失败 (HTTP " + resp.status + ")"));
+            body.appendChild(el("div", { className: "badge badge-danger" }, tr("加载 Diff 失败 (HTTP ") + resp.status + ")"));
             return;
           }
           const diffData = await resp.json();
+          state.currentDiff = diffData;
           renderDiffContent(body, diffData);
         } catch (e) {
           while (body.firstChild) body.removeChild(body.firstChild);
-          body.appendChild(el("div", { className: "badge badge-danger" }, "Diff 请求异常: " + e.message));
+          body.appendChild(el("div", { className: "badge badge-danger" }, tr("Diff 请求异常: ") + e.message));
         }
       }
 
@@ -1750,13 +1792,13 @@ select,input[type=text],input[type=number],input[type=password]{background:var(-
         const cmp = data.comparison || {};
 
         if (!rec) {
-          container.appendChild(el("div", { className: "empty-state" }, "未找到对应记录详情"));
+          container.appendChild(el("div", { className: "empty-state" }, tr("未找到对应记录详情")));
           return;
         }
 
         // Section 1: Overview & Diagnosis
         const diagCard = el("div", { className: "diff-section-card" },
-          el("div", { className: "diff-section-title" }, "诊断归因与原因分析"),
+          el("div", { className: "diff-section-title" }, tr("诊断归因与原因分析")),
           el("div", { style: { display: "flex", alignItems: "center", gap: "8px", fontSize: "14px", fontWeight: "600" } },
             el("span", null, formatMissReason(cmp.miss_reason || rec.miss_reason))
           )
@@ -1768,41 +1810,41 @@ select,input[type=text],input[type=number],input[type=password]{background:var(-
 
         // Section 2: Metadata Comparison (Current vs Previous)
         const metaCard = el("div", { className: "diff-section-card" },
-          el("div", { className: "diff-section-title" }, "轮次元数据对比 (Current vs Previous)"),
+          el("div", { className: "diff-section-title" }, tr("轮次元数据对比 (Current vs Previous)")),
           el("div", { className: "diff-meta-grid" },
             el("div", { className: "diff-meta-item" },
-              el("span", { className: "diff-meta-label" }, "当前记录 ID"),
+              el("span", { className: "diff-meta-label" }, tr("当前记录 ID")),
               el("span", { className: "diff-meta-val" }, rec.id)
             ),
             el("div", { className: "diff-meta-item" },
-              el("span", { className: "diff-meta-label" }, "前序记录 ID"),
-              el("span", { className: "diff-meta-val" }, prev ? prev.id : "(无前序，会话首轮)")
+              el("span", { className: "diff-meta-label" }, tr("前序记录 ID")),
+              el("span", { className: "diff-meta-val" }, prev ? prev.id : tr("(无前序，会话首轮)"))
             ),
             el("div", { className: "diff-meta-item" },
-              el("span", { className: "diff-meta-label" }, "当前时间"),
+              el("span", { className: "diff-meta-label" }, tr("当前时间")),
               el("span", { className: "diff-meta-val" }, formatDate(rec.timestamp))
             ),
             el("div", { className: "diff-meta-item" },
-              el("span", { className: "diff-meta-label" }, "前序时间"),
+              el("span", { className: "diff-meta-label" }, tr("前序时间")),
               el("span", { className: "diff-meta-val" }, prev ? formatDate(prev.timestamp) : "-")
             ),
             el("div", { className: "diff-meta-item" },
-              el("span", { className: "diff-meta-label" }, "模型"),
+              el("span", { className: "diff-meta-label" }, tr("模型")),
               el("span", { className: "diff-meta-val" }, rec.display_model || rec.model)
             ),
             el("div", { className: "diff-meta-item" },
-              el("span", { className: "diff-meta-label" }, "前序模型"),
+              el("span", { className: "diff-meta-label" }, tr("前序模型")),
               el("span", { className: "diff-meta-val" }, prev ? (prev.display_model || prev.model) : "-")
             ),
             el("div", { className: "diff-meta-item" },
-              el("span", { className: "diff-meta-label" }, "会话标识 (Session Key)"),
+              el("span", { className: "diff-meta-label" }, tr("会话标识 (Session Key)")),
               el("span", { className: "diff-meta-val" }, rec.effective_session_key || rec.session_id || "-")
             ),
             el("div", { className: "diff-meta-item" },
-              el("span", { className: "diff-meta-label" }, "上游 Auth ID"),
+              el("span", { className: "diff-meta-label" }, tr("上游 Auth ID")),
               el("span", { className: "diff-meta-val" }, 
                 rec.auth_id || "-",
-                cmp.auth_changed ? el("span", { className: "badge badge-danger", style: { marginLeft: "6px" } }, "账号切换") : null
+                cmp.auth_changed ? el("span", { className: "badge badge-danger", style: { marginLeft: "6px" } }, tr("账号切换")) : null
               )
             )
           )
@@ -1811,35 +1853,35 @@ select,input[type=text],input[type=number],input[type=password]{background:var(-
 
         // Section 3: Structural Diff Metrics
         const structCard = el("div", { className: "diff-section-card" },
-          el("div", { className: "diff-section-title" }, "消息结构对齐指标"),
+          el("div", { className: "diff-section-title" }, tr("消息结构对齐指标")),
           el("div", { style: { display: "flex", gap: "10px", flexWrap: "wrap" } },
-            el("span", { className: "badge badge-primary" }, "相同前缀消息: " + cmp.identical_leading_messages + " 轮"),
+            el("span", { className: "badge badge-primary" }, tr("相同前缀消息: ") + cmp.identical_leading_messages + tr(" 轮")),
             el("span", { className: "badge " + (cmp.append_only ? "badge-success" : "badge-warning") }, 
-              cmp.append_only ? "✅ 严格仅追加 (Append-Only)" : "⚠️ 前缀已分叉"
+              cmp.append_only ? tr("✅ 严格仅追加 (Append-Only)") : tr("⚠️ 前缀已分叉")
             ),
-            cmp.auth_changed ? el("span", { className: "badge badge-danger" }, "❌ 上游账号已轮换") : null,
-            cmp.hashes_truncated ? el("span", { className: "badge badge-warning" }, "⚠️ 哈希序列超过上限已截断") : null
+            cmp.auth_changed ? el("span", { className: "badge badge-danger" }, tr("❌ 上游账号已轮换")) : null,
+            cmp.hashes_truncated ? el("span", { className: "badge badge-warning" }, tr("⚠️ 哈希序列超过上限已截断")) : null
           )
         );
 
         if (cmp.changed_fields && cmp.changed_fields.length > 0) {
           structCard.appendChild(el("div", { style: { fontSize: "12px", color: "var(--warning)" } },
-            "变更顶层字段: " + cmp.changed_fields.join(", ")
+            tr("变更顶层字段: ") + cmp.changed_fields.join(", ")
           ));
         }
 
         if (cmp.changed_options && cmp.changed_options.length > 0) {
           structCard.appendChild(el("div", { style: { fontSize: "12px", color: "var(--warning)" } },
-            "变更模型参数 (Options): " + cmp.changed_options.join(", ")
+            tr("变更模型参数 (Options): ") + cmp.changed_options.join(", ")
           ));
         }
         container.appendChild(structCard);
 
         // Section 4: Hash Sequence Visualization
         const hashCard = el("div", { className: "diff-section-card" },
-          el("div", { className: "diff-section-title" }, "消息哈希序列对比 (严格内容无害化摘要)"),
+          el("div", { className: "diff-section-title" }, tr("消息哈希序列对比 (严格内容无害化摘要)")),
           el("div", { style: { fontSize: "11px", color: "var(--text-dim)", marginBottom: "4px" } },
-            "绿色表示前序会话前缀完全匹配，黄色为首次分叉消息，蓝色为当前轮次新追加消息。"
+            tr("绿色表示前序会话前缀完全匹配，黄色为首次分叉消息，蓝色为当前轮次新追加消息。")
           )
         );
 
@@ -1849,18 +1891,18 @@ select,input[type=text],input[type=number],input[type=password]{background:var(-
         const commonCount = cmp.identical_leading_messages || 0;
 
         if (curHashes.length === 0) {
-          hashList.appendChild(el("div", { className: "empty-state" }, "未提取到消息哈希指纹 (trace_enabled 可能未开启)"));
+          hashList.appendChild(el("div", { className: "empty-state" }, tr("未提取到消息哈希指纹 (trace_enabled 可能未开启)")));
         } else {
           curHashes.forEach((h, idx) => {
             let itemClass = "hash-append";
-            let statusText = "新增轮次 (Appended)";
+            let statusText = tr("新增轮次 (Appended)");
 
             if (idx < commonCount) {
               itemClass = "hash-match";
-              statusText = "完全匹配 (Matched)";
+              statusText = tr("完全匹配 (Matched)");
             } else if (idx === commonCount && prevHashes.length > commonCount) {
               itemClass = "hash-diff";
-              statusText = "前缀分叉点 (Diverged)";
+              statusText = tr("前缀分叉点 (Diverged)");
             }
 
             const item = el("div", { className: "hash-item " + itemClass },
@@ -1877,24 +1919,24 @@ select,input[type=text],input[type=number],input[type=password]{background:var(-
 
       function getDiagnosisExplanation(cmp, cur, prev) {
         if (!prev) {
-          return "这是当前会话在监测期内的首轮交互（冷启动）。主流 LLM 提供商仅在后续且携带相同历史前缀的请求中提供缓存命中优惠。";
+          return tr("这是当前会话在监测期内的首轮交互（冷启动）。主流 LLM 提供商仅在后续且携带相同历史前缀的请求中提供缓存命中优惠。");
         }
         if (cmp.auth_changed) {
-          return "检测到上游提供商认证账号 (AuthID) 发生切换！LLM 提供商的 Prompt Cache 是与 API Key / 租户强绑定的，跨凭据无法命中上一个账号已建立的缓存。";
+          return tr("检测到上游提供商认证账号 (AuthID) 发生切换！LLM 提供商的 Prompt Cache 是与 API Key / 租户强绑定的，跨凭据无法命中上一个账号已建立的缓存。");
         }
         if (cmp.changed_fields && cmp.changed_fields.includes("system_hash")) {
-          return "检测到系统提示词 (System Prompt) 发生了变更。系统提示词位于整个对话的最前端，一旦更改将导致全量历史缓存失效。";
+          return tr("检测到系统提示词 (System Prompt) 发生了变更。系统提示词位于整个对话的最前端，一旦更改将导致全量历史缓存失效。");
         }
         if (cmp.changed_fields && cmp.changed_fields.includes("tools_hash")) {
-          return "检测到工具定义 (Tools/Function Definitions) 发生了变更，导致前置结构变化，无法复用上轮缓存。";
+          return tr("检测到工具定义 (Tools/Function Definitions) 发生了变更，导致前置结构变化，无法复用上轮缓存。");
         }
         if (!cmp.append_only && cmp.identical_leading_messages < (prev.fingerprint?.message_count || 0)) {
-          return "历史消息前缀已被编辑或缩减（分叉位于第 " + (cmp.identical_leading_messages + 1) + " 轮消息）。提供商无法匹配已有前缀，需要重新对分叉后的内容计算全量上下文。";
+          return tr("历史消息前缀已被编辑或缩减（分叉位于第 ") + (cmp.identical_leading_messages + 1) + tr(" 轮消息）。提供商无法匹配已有前缀，需要重新对分叉后的内容计算全量上下文。");
         }
         if (cur.tokens && cur.tokens.cache_read > 0) {
-          return "缓存成功命中！历史前缀保持一致，上游成功复用了已有 KV 缓存。";
+          return tr("缓存成功命中！历史前缀保持一致，上游成功复用了已有 KV 缓存。");
         }
-        return "请求前缀结构保持一致，但上游提供商未返回命中 Token。可能由于上游提供商缓存生命周期到期（TTL 超时），或上游节点负载较高导致缓存被驱逐。";
+        return tr("请求前缀结构保持一致，但上游提供商未返回命中 Token。可能由于上游提供商缓存生命周期到期（TTL 超时），或上游节点负载较高导致缓存被驱逐。");
       }
 
       // Approach B: Config Update & Polling
@@ -1904,7 +1946,7 @@ select,input[type=text],input[type=number],input[type=password]{background:var(-
 
         const toggle = document.getElementById("trace-toggle");
         if (toggle) toggle.disabled = true;
-        safeSetText("trace-status-text", "正在同步...");
+        safeSetText("trace-status-text", tr("正在同步..."));
 
         try {
           const patchResp = await apiFetch("/v0/management/plugins/cpa-cache-tracker/config", {
@@ -1914,7 +1956,7 @@ select,input[type=text],input[type=number],input[type=password]{background:var(-
           });
 
           if (!patchResp.ok) {
-            throw new Error("PATCH config 失败: HTTP " + patchResp.status);
+            throw new Error(tr("PATCH config 失败: HTTP ") + patchResp.status);
           }
 
           // Poll status until omit_body_after === !enabled
@@ -1932,12 +1974,12 @@ select,input[type=text],input[type=number],input[type=password]{background:var(-
           }
 
           if (synced) {
-            showToast("运行时指纹追踪状态已更新为: " + (enabled ? "ON" : "OFF"), "success");
+            showToast(tr("运行时指纹追踪状态已更新为: ") + (enabled ? "ON" : "OFF"), "success");
           } else {
-            showToast("配置已提交，但挂载状态同步超时", "warning");
+            showToast(tr("配置已提交，但挂载状态同步超时"), "warning");
           }
         } catch (e) {
-          showToast("更新配置失败: " + e.message, "error");
+          showToast(tr("更新配置失败: ") + e.message, "error");
           if (toggle && state.status) {
             toggle.checked = Boolean(state.status.trace_enabled);
           }
@@ -1949,7 +1991,7 @@ select,input[type=text],input[type=number],input[type=password]{background:var(-
       }
 
       async function reloadConfig() {
-        showToast("正在重载插件配置...", "info");
+        showToast(tr("正在重载插件配置..."), "info");
         try {
           const resp = await apiFetch("/v0/management/plugins/cpa-cache-tracker/config", {
             method: "PATCH",
@@ -1962,7 +2004,7 @@ select,input[type=text],input[type=number],input[type=password]{background:var(-
           }
 
           const configResp = await apiFetch("/v0/management/plugins/cpa-cache-tracker/config");
-          if (!configResp.ok) throw new Error("读取配置失败: HTTP " + configResp.status);
+          if (!configResp.ok) throw new Error(tr("读取配置失败: HTTP ") + configResp.status);
           const expected = await configResp.json();
           const deadline = Date.now() + 5000;
           let synced = false;
@@ -1976,9 +2018,9 @@ select,input[type=text],input[type=number],input[type=password]{background:var(-
           } while (Date.now() < deadline);
           await fetchSummary();
           await fetchRecords();
-          showToast(synced ? "配置已重载并与宿主进程同步！" : "配置已提交，运行时同步仍在等待中", synced ? "success" : "warning");
+          showToast(synced ? tr("配置已重载并与宿主进程同步！") : tr("配置已提交，运行时同步仍在等待中"), synced ? "success" : "warning");
         } catch (e) {
-          showToast("重载配置异常: " + e.message, "error");
+          showToast(tr("重载配置异常: ") + e.message, "error");
         }
       }
 
@@ -2021,15 +2063,15 @@ select,input[type=text],input[type=number],input[type=password]{background:var(-
           if (!resp.ok) throw new Error("HTTP " + resp.status);
 
           closeSettingsModal();
-          showToast("保留配置已保存", "success");
+          showToast(tr("保留配置已保存"), "success");
           await fetchStatus();
         } catch (e) {
-          showToast("保存配置失败: " + e.message, "error");
+          showToast(tr("保存配置失败: ") + e.message, "error");
         }
       }
 
       async function purgeData(all) {
-        const msg = all ? "确认清空所有追踪记录吗？此操作无法撤销！" : "确认清理所有过期数据吗？";
+        const msg = all ? tr("确认清空所有追踪记录吗？此操作无法撤销！") : tr("确认清理所有过期数据吗？");
         if (!confirm(msg)) return;
 
         try {
@@ -2043,13 +2085,13 @@ select,input[type=text],input[type=number],input[type=password]{background:var(-
           if (!resp.ok) throw new Error("HTTP " + resp.status);
           const res = await resp.json();
 
-          showToast("清理完成！已删除 " + res.deleted_records + " 条记录 (" + res.deleted_files + " 个文件)", "success");
+          showToast(tr("清理完成！已删除 ") + res.deleted_records + tr(" 条记录 (") + res.deleted_files + tr(" 个文件)"), "success");
           closeSettingsModal();
           await fetchStatus();
           await fetchSummary();
           await fetchRecords();
         } catch (e) {
-          showToast("清理失败: " + e.message, "error");
+          showToast(tr("清理失败: ") + e.message, "error");
         }
       }
 
@@ -2077,7 +2119,7 @@ select,input[type=text],input[type=number],input[type=password]{background:var(-
         state.authBlocked = false;
         sessionStorage.setItem("cpa-cache-tracker-key", val);
         closeAuthModal();
-        showToast("管理凭据已更新", "success");
+        showToast(tr("管理凭据已更新"), "success");
         initData();
       }
 
@@ -2310,6 +2352,7 @@ select,input[type=text],input[type=number],input[type=password]{background:var(-
 
       // Initialize
       document.addEventListener("DOMContentLoaded", () => {
+        setupLanguage();
         setupEventListeners();
         initData();
       });

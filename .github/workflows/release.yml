@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "Release tag (e.g. v0.1.4)"
+        description: "Release tag (e.g. v0.1.5)"
         required: false
 
 permissions:
@@ -15,7 +15,7 @@ permissions:
 
 env:
   PLUGIN_ID: cpa-cache-tracker
-  DEFAULT_VERSION: 0.1.4
+  DEFAULT_VERSION: 0.1.5
 
 jobs:
   test:

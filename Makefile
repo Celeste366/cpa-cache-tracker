@@ -1,7 +1,7 @@
 .PHONY: all build test install clean
 
 PLUGIN_NAME := cpa-cache-tracker
-VERSION := v0.1.4
+VERSION := v0.1.5
 BIN_DIR := bin
 
 GOOS ?= $(shell go env GOOS)
