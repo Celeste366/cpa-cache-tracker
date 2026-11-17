@@ -19,7 +19,7 @@ make build
 make install
 ```
 
-Release: **0.1.2**, C ABI 1, schema 10. The host switches native libraries by versioned path, so replacing a loaded library at the same path does not activate its new bytes. Install a new versioned filename and trigger a CPA config reload. Keep the previous version or backup for rollback.
+Release: **0.1.3**, C ABI 1, schema 10. The host switches native libraries by versioned path, so replacing a loaded library at the same path does not activate its new bytes. Install a new versioned filename and trigger a CPA config reload. Keep the previous version or backup for rollback.
 
 Enable under CPA config.yaml:
 
@@ -58,3 +58,7 @@ Preserves usage session IDs when interception metadata is missing; handles WorkB
 
 Forest/Porcelain dashboard redesign: responsive sidebar, clearer overview and metric hierarchy, paired trend/diagnosis panels, full-width model/request tables, consistent settings and diff surfaces, accessible filter/navigation labels, and reduced-motion support. Existing API paths, data bindings, tracing controls and authentication behavior are retained.
 
+
+## Release 0.1.3
+
+Embeds the dashboard favicon to avoid a missing host-level /favicon.ico request. No external assets are required.

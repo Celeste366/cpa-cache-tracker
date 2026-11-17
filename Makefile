@@ -1,7 +1,7 @@
 .PHONY: all build test install clean
 
 PLUGIN_NAME := cpa-cache-tracker
-VERSION := v0.1.2
+VERSION := v0.1.3
 BIN_DIR := bin
 DYLIB_NAME := $(PLUGIN_NAME)-$(VERSION).dylib
 DYLIB_PATH := $(BIN_DIR)/$(DYLIB_NAME)
