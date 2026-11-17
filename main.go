@@ -417,7 +417,7 @@ func (d *Dispatcher) buildRegistrationLocked() abi.Registration {
 		SchemaVersion: abi.SchemaVersion,
 		Metadata: abi.Metadata{
 			Name:             "cpa-cache-tracker",
-			Version:          "0.1.1",
+			Version:          "0.1.2",
 			Author:           "Celeste366",
 			GitHubRepository: "https://github.com/Celeste366/cpa-cache-tracker",
 			Logo:             "",

@@ -1,10 +1,11 @@
 <!DOCTYPE html>
+
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cache Tracker - CPA 缓存追踪看板</title>
-  <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Cache Tracker - CPA 缓存追踪看板</title>
+<style>
     :root {
       --bg-base: #090d16;
       --bg-surface: #111827;
@@ -588,389 +589,383 @@
     .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 140px; display: inline-block; vertical-align: middle; }
     .empty-state { text-align: center; padding: 40px; color: var(--text-dim); }
   </style>
-</head>
-<body>
+<style id="cache-tracker-refinement">/* Cache Tracker 0.1.2 · Forest / Porcelain */
+:root{color-scheme:light;--bg-base:#f5f7f6;--bg-surface:#fff;--bg-surface-elevated:#f6f8f6;--bg-input:#f6f8f6;--border-subtle:#edf1ee;--border-normal:#e3eae5;--border-focus:#37815a;--text-main:#203c2c;--text-muted:#657b6b;--text-dim:#77867b;--primary:#267a50;--primary-hover:#1d633e;--primary-subtle:#edf6ef;--success:#287b4e;--success-subtle:#edf7f0;--warning:#9c6920;--warning-subtle:#faf4e8;--danger:#b94d4d;--danger-subtle:#fbefef;--purple:#6f7794;--radius-sm:5px;--radius-md:8px;--radius-lg:16px;--shadow-sm:0 1px 3px #173b2410;--shadow-md:0 8px 26px #1b402414;--shadow-lg:0 20px 80px #0c281e24}
+html{scroll-behavior:smooth;scroll-padding-top:100px}
+body{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Noto Sans SC",sans-serif;font-size:13px;line-height:1.55;background:var(--bg-base);-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+button,input,select{font-family:inherit}button,a,input,select{-webkit-tap-highlight-color:transparent}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #4b9d6b66;outline-offset:3px}
+.icon-sprite{position:absolute;width:0;height:0;overflow:hidden;pointer-events:none}.icon{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.app-sidebar{position:fixed;inset:0 auto 0 0;width:218px;background:#112b25;color:#b1c8bc;display:flex;flex-direction:column;padding:28px 16px 20px;z-index:45}
+.sidebar-brand{display:flex;gap:11px;align-items:center;padding:0 6px 36px;color:#f4faf7;text-decoration:none;font-size:17px;font-weight:650;letter-spacing:-.5px;white-space:nowrap}
+.sidebar-brand small{display:block;font-size:8px;font-weight:500;letter-spacing:1.7px;color:#8dab9e;margin-top:7px}
+.brand-mark{height:33px;width:33px;display:grid;place-items:center;position:relative;background:#b8f3cf;color:#163729;border-radius:10px;font-size:23px;line-height:1;font-weight:650;flex-shrink:0}.brand-mark>span{width:5px;height:5px;background:#2a7751;position:absolute;right:6px;bottom:6px;border:1px solid #b8f3cf;border-radius:50%}
+.nav-label{font-size:10px;letter-spacing:1.2px;color:#82a594;padding:12px 12px 14px}.app-sidebar nav{display:flex;flex-direction:column;gap:8px}.nav-link{width:100%;display:flex;align-items:center;gap:13px;text-decoration:none;padding:13px 14px;border:0;background:none;color:#b1c8bc;border-radius:9px;font-size:13px;line-height:1.4;text-align:left;cursor:pointer;transition:background .18s,color .18s}.nav-link .icon{color:#85a99a}.nav-link:hover{background:#1d3d32;color:#fff}.nav-link.active{background:#244a3d;color:#dcf9e7;font-weight:550}.nav-link.active .icon{color:#b9f1cd}.nav-dot{margin-left:auto;width:5px;height:5px;background:#b7efca;border-radius:50%}.nav-divider{height:1px;background:#29483b;margin:28px 12px 12px}
+.sidebar-note{margin-top:auto;padding:17px 14px;background:#1c382f;border:1px solid #29483b;border-radius:12px}.sidebar-note>div{display:flex;align-items:center;gap:7px;font-size:12px;color:#d0e9d9}.sidebar-note>span{display:block;margin-top:11px;font-size:10px;color:#9bb6a8}.sidebar-note small{display:block;font-size:9px;color:#82a594;margin-top:3px}
+.live-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#3e9864;box-shadow:0 0 0 3px #3e986412;flex-shrink:0}.sidebar-note .live-dot{background:#b4e7c5}
+body>header{margin-left:218px;padding:20px 32px;background:#ffffffed;backdrop-filter:blur(16px);border-color:var(--border-normal);height:77px;display:flex;align-items:center}
+.header-top{width:100%;flex-wrap:nowrap}.brand-wrap{min-width:0}.brand-title{font-size:12px;color:var(--text-main);font-weight:550;gap:0}.breadcrumb-muted{font-weight:400;color:var(--text-muted)}.slash{margin:0 20px;color:#b5c0b8}.header-actions{gap:12px;flex-wrap:nowrap}.header-actions>.btn{padding:8px 12px;background:#fff}.header-actions #auth-btn{padding:9px}.live-pill{display:flex;align-items:center;gap:7px;font-size:11px;color:#32784f;background:#eef6f0;border-radius:20px;padding:6px 12px;margin-right:10px;white-space:nowrap}
+main{margin:0 0 0 218px;width:calc(100% - 218px);max-width:none;padding:30px 32px 34px;gap:24px;min-width:0}main>section{min-width:0;scroll-margin-top:90px}
+.page-intro{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:2px 0 0}.eyebrow{font-size:9px;letter-spacing:1.8px;color:#84998b;font-weight:600;margin-bottom:8px}.page-intro h1{font-size:29px;font-weight:650;letter-spacing:-1px;line-height:1.4}.title-dot{color:#429366;margin-left:3px}.page-intro p{margin-top:8px;font-size:12px;color:var(--text-muted)}.intro-actions{display:flex;gap:12px;align-items:center;flex-shrink:0}
+.switch-container{font-size:11px;background:#fff;border:1px solid var(--border-normal);border-radius:9px;gap:10px;padding:10px 12px;min-height:39px}.switch-container>.badge{padding:0;background:none;border:0;font-weight:500;font-size:10px}.slider{background:#c3cdc5}.switch{width:30px;height:17px}.slider:before{width:11px;height:11px}.intro-actions .btn{padding:10px 14px;background:#fff;font-size:11px}
+.status-strip{display:flex;flex-wrap:wrap;align-items:center;gap:24px;padding-bottom:19px;margin-top:-7px;margin-bottom:-8px;border-bottom:1px solid var(--border-normal);color:var(--text-dim);font-size:10px}.status-item{gap:8px}.status-strip strong{font-weight:500;color:#47614d}
+.btn{border:1px solid var(--border-normal);background:#fff;color:#49604f;font-weight:500;font-size:11px;padding:8px 12px;box-shadow:0 1px 1px #13392104;white-space:nowrap}.btn:hover{background:#f2f7f3;border-color:#b7cdbd;color:#235e3c;transform:translateY(-1px)}.btn:disabled{opacity:.4;cursor:not-allowed;transform:none}.btn-primary{background:var(--primary);border-color:var(--primary);color:#fff}.btn-primary:hover{background:var(--primary-hover);border-color:var(--primary-hover);color:#fff}.btn-danger{background:var(--danger-subtle);color:var(--danger);border-color:#e8bebe}.btn-sm{padding:6px 9px;font-size:10px}
+.filter-bar{border-color:var(--border-normal);border-radius:12px;padding:12px;background:#fff;gap:12px}.filter-group{gap:10px;min-width:0}.range-selector{padding:3px;gap:2px;border:0;background:#f1f5f2;border-radius:8px;flex-shrink:0}.range-btn{padding:7px 10px;border-radius:6px;font-size:10px}.range-btn.active{background:#fff;color:#2e714b;box-shadow:0 1px 4px #183b2410}.range-btn:hover{background:#e9f0ea}.range-btn.active:hover{background:#fff}
+select,input[type=text],input[type=number],input[type=password]{background:#fff;color:#3d5946;border:1px solid var(--border-normal);border-radius:7px;font-size:11px;padding:8px 10px;min-width:0;max-width:100%;outline:none}input[type=password]{width:100%;font-size:13px;padding:12px}input::placeholder{color:#899c8e}input[type=checkbox]{accent-color:var(--primary)}.filter-bar select{border-color:transparent;padding:7px 8px;background:#fafcf9}.filter-bar input[type=text]{width:195px!important;background:#f7f9f7}.filter-bar label{font-size:10px!important;white-space:nowrap}
+.kpi-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:16px}.kpi-card{padding:20px;border:1px solid var(--border-normal);border-radius:14px;gap:16px;box-shadow:0 2px 4px #173b2403;min-width:0;overflow:hidden}.kpi-title{font-size:11px;align-items:flex-start;gap:7px;flex-direction:column;position:relative;color:#5e7665}.kpi-caption{background:none!important;color:#8c9f90!important;border:0!important;font-weight:400;font-size:9px;padding:0;letter-spacing:.2px}.kpi-value{font-size:clamp(26px,2.55vw,43px);font-weight:580;letter-spacing:-1.5px;line-height:1.12;white-space:nowrap;margin:0 0 6px}.kpi-sub{font-size:10px;gap:6px}.kpi-sub-row{gap:8px;align-items:flex-end}.kpi-sub-row strong{font-size:10px;font-weight:500;text-align:right}.metric-1{background:#163c2b;border-color:#163c2b;position:relative}.metric-1::after{content:"";position:absolute;width:120px;height:120px;border:1px solid #bcf3ce16;border-radius:50%;right:-60px;top:-50px;box-shadow:0 0 0 22px #bcf3ce05;pointer-events:none}.metric-1 .kpi-title{color:#d2e8d8}.metric-1 .kpi-caption{color:#8fbaa0!important}.metric-1 .kpi-value{color:#bdf2ce}.metric-1 .kpi-sub{color:#94b8a1}.metric-1 .kpi-sub-row strong{color:#d2e9da}.metric-5 .kpi-value{font-size:clamp(23px,2.2vw,36px);line-height:1.34}
+.chart-layout{display:grid;grid-template-columns:minmax(0,2.2fr) minmax(275px,1fr);gap:20px;align-items:stretch}.chart-card,.panel-card{border:1px solid var(--border-normal);border-radius:14px;padding:22px;background:#fff;gap:14px;min-width:0;box-shadow:0 2px 4px #173b2403}.chart-header{align-items:center;gap:10px}.chart-title{font-size:15px;font-weight:600;color:#274c34;gap:12px}.chart-title select{font-size:10px!important;max-width:155px;background:#f8faf7;border-color:var(--border-normal);padding:6px!important}.section-description{color:var(--text-dim);font-size:11px;margin-top:-8px}.chart-legend{font-size:9px;gap:10px}.legend-color{width:7px;height:7px;border-radius:50%}.legend-item:first-child .legend-color{background:#299563!important}.legend-item:last-child .legend-color{background:#d2e4d8!important;border-radius:2px}.chart-wrapper{height:215px;margin-top:5px}.chart-tooltip{color:#e6f3e9;background:#183b2bed;border:0;font-size:10px;border-radius:8px}.reason-card{gap:16px}.reason-card #miss-reasons-list{gap:24px!important;margin-top:10px}.reason-card #miss-reasons-list>div>div:first-child{gap:8px;align-items:flex-start;font-size:11px!important}.reason-card .mono{font-size:10px;white-space:nowrap;color:#476751;font-family:inherit}.progress-bar-bg{height:5px;background:#f1f5f1;margin-top:8px}.progress-bar-fill{background:#76ab88}.reason-card #miss-reasons-list>div:first-child .progress-bar-fill{background:#4b9567}
+.analytics-grid{display:block}.diff-section-title{font-size:15px;font-weight:600;letter-spacing:0;text-transform:none;color:#294d35}.heading-note{font-size:10px;font-weight:400;color:var(--text-dim);margin-left:12px;display:inline-block}.table-responsive{border:0;border-radius:7px;max-width:100%;overscroll-behavior-x:contain}table{font-size:11px}th{padding:11px 13px;font-size:10px;font-weight:500;color:#7b8d7e;background:#f6f9f6;border-bottom:1px solid var(--border-subtle)}td{padding:15px 13px;color:#526b58;border-color:var(--border-subtle)}td:first-child{color:#35563e}.mono{font-size:10px;letter-spacing:-.15px}.clickable-row:hover td{background:#f4f9f4}.active-row td{background:#ecf4ed!important}.badge{font-size:9px;font-weight:500;padding:3px 7px;border-radius:5px;letter-spacing:.1px}.badge-primary{background:#edf5ef;color:#39744a;border-color:#e2eee4}.badge-success{background:#edf7ef;color:#287548;border-color:#ddecdf}.badge-warning{background:#faf5e9;color:#93732e;border-color:#f4ead3}.badge-danger{color:#b45e5e;background:#fcf1f1;border-color:#f4dcdc}.badge-gray{color:#77887a;background:#f2f5f2;border-color:#e9eee9}.pagination{padding:4px 0 0;font-size:10px}#requests>div:first-child{flex-wrap:wrap;gap:12px}#requests .btn-sm{font-size:10px}.empty-state{font-size:11px;color:#8e9e92;padding:35px 20px}
+.drawer{width:560px;max-width:100vw;background:#fff;box-shadow:var(--shadow-lg)}.drawer-backdrop{background:#102a234d;backdrop-filter:blur(3px)}.drawer-header{padding:23px 24px}.drawer-title,.modal-title{color:#25452f;font-size:16px}.drawer-body{padding:24px;gap:18px}.diff-section-card{background:#f7f9f6;border-color:#e7eee6;border-radius:10px;padding:16px;gap:12px}.diff-section-card .diff-section-title{font-size:12px}.diff-meta-label{font-size:10px}.diff-meta-val{font-size:11px}.hash-match{color:#327b4b;background:#eff7f0}.hash-diff{color:#93702a;background:#fbf6e9}.hash-append{color:#396950;background:#edf6f0}.modal-backdrop{background:#102a2366;backdrop-filter:blur(5px)}.modal{border-radius:16px;padding:28px;border:1px solid #e6ede6;gap:20px}.form-group{gap:8px}.form-group label{font-size:11px}.modal p{font-size:12px!important;color:#6c806f!important}.toast-container{bottom:26px;right:26px}.toast{font-size:12px;padding:14px 18px;border-radius:10px;background:#fff;box-shadow:var(--shadow-md)}
+@media(min-width:1800px){main{padding-left:48px;padding-right:48px}.kpi-value{font-size:45px}}
+@media(max-width:1300px){.app-sidebar{width:188px;padding-left:12px;padding-right:12px}.sidebar-brand{font-size:15px;gap:9px}.sidebar-brand small{font-size:7px;letter-spacing:1.3px}.brand-mark{width:29px;height:29px;font-size:21px}body>header{margin-left:188px;padding:18px 24px}main{margin-left:188px;width:calc(100% - 188px);padding:28px 24px}.kpi-card{padding:16px}.kpi-sub-row{flex-direction:column;align-items:flex-start;gap:1px}.kpi-value{font-size:30px}.metric-5 .kpi-value{font-size:25px}.chart-layout{grid-template-columns:minmax(0,1.8fr) minmax(260px,1fr)}.chart-header{align-items:flex-start;flex-direction:column}.chart-title{justify-content:space-between;width:100%}.chart-legend{align-self:flex-end}.section-description{margin-top:-4px}}
+@media(max-width:1050px){.app-sidebar{width:70px;padding:24px 10px}.sidebar-brand{padding:0 10px 35px}.sidebar-brand>span:last-child,.nav-link>span,.nav-label,.sidebar-note,.nav-divider{display:none}.nav-link{padding:13px;justify-content:center}.nav-link .icon{width:19px;height:19px}.app-sidebar nav+nav{margin-top:24px}.app-sidebar nav:nth-of-type(2){margin-top:auto}.brand-mark{flex-shrink:0}body>header{margin-left:70px}main{margin-left:70px;width:calc(100% - 70px)}.kpi-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.kpi-card:nth-child(4){grid-column:span 1}.kpi-value{font-size:37px}.kpi-sub-row{flex-direction:row;align-items:flex-end}.kpi-grid{gap:12px}.kpi-card{min-height:172px}.chart-layout{grid-template-columns:minmax(0,1.6fr) minmax(245px,1fr)}.intro-actions{gap:8px}.switch-container{padding:8px;gap:6px}.switch-container>.badge{display:none}.intro-actions .btn{padding:9px 11px}}
+@media(max-width:760px){.app-sidebar{position:sticky;top:0;inset:auto;width:100%;height:61px;padding:0 16px;flex-direction:row;align-items:center;gap:20px;z-index:48}.sidebar-brand{padding:0}.sidebar-brand>span:last-child{display:block;font-size:14px}.sidebar-brand small{display:none}.app-sidebar nav{flex-direction:row;margin-left:auto;gap:4px}.app-sidebar nav:nth-of-type(2){display:none}.nav-link{padding:9px}.brand-mark{width:28px;height:28px;font-size:20px}.nav-link.active{background:#244a3d}.nav-link .icon{width:16px;height:16px}.nav-link{width:auto}body>header{margin:0;top:61px;height:57px;padding:12px 18px}.brand-title{font-size:11px}.slash{margin:0 12px}.live-pill{font-size:10px;padding:5px 9px;margin-right:0}.header-actions{gap:7px}.header-actions>.btn{font-size:10px;padding:7px}.header-actions #auth-btn{padding:7px}main{margin:0;width:100%;padding:24px 16px;gap:18px}.page-intro{align-items:flex-start;gap:17px;flex-direction:column}.page-intro h1{font-size:27px}.page-intro p{font-size:11px}.intro-actions{align-self:stretch;justify-content:flex-end}.switch-container{margin-right:auto}.eyebrow{font-size:8px}.status-strip{gap:9px 18px;line-height:1.8;padding-bottom:14px;font-size:9px}.status-item{gap:5px}.filter-bar{padding:10px;gap:10px}.range-selector{max-width:100%;overflow-x:auto;flex-shrink:1}.range-btn{padding:7px 9px;white-space:nowrap}.filter-group{gap:6px;max-width:100%;width:100%}.filter-bar select{font-size:10px;padding:7px}.filter-bar input[type=text]{flex:1;width:130px!important}.filter-bar label{font-size:9px!important}.filter-bar .btn{padding:7px;font-size:10px}.kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.kpi-card{padding:17px;min-height:157px;gap:14px}.metric-1{grid-column:span 2;display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:16px}.metric-1 .kpi-title{grid-column:1;grid-row:1}.metric-1 .kpi-value{grid-column:2;grid-row:1 / span 2;text-align:right;font-size:48px;margin-right:2px}.metric-1 .kpi-sub{grid-column:1}.kpi-value{font-size:34px}.metric-5 .kpi-value{font-size:29px}.kpi-title{font-size:11px}.kpi-sub-row{gap:4px;flex-direction:column;align-items:flex-start}.chart-layout{grid-template-columns:1fr;gap:18px}.chart-card,.panel-card{padding:18px;border-radius:13px}.chart-wrapper{height:200px}.chart-header{gap:8px}.chart-title{font-size:14px;flex-wrap:wrap}.chart-title select{font-size:9px!important;max-width:145px}.reason-card #miss-reasons-list{gap:18px!important;margin:0}.heading-note{font-size:9px;margin-left:7px}.diff-section-title{font-size:14px}#requests>div:first-child{gap:12px}#requests .diff-section-title .heading-note{display:block;margin:5px 0 0}.drawer-body{padding:16px}.modal{padding:22px}.toast-container{right:16px;left:16px;bottom:16px}.toast{font-size:11px}.table-responsive{border:1px solid var(--border-subtle)}th,td{padding:11px}.sidebar-brand{white-space:nowrap}.brand-title .breadcrumb-muted{display:none}html{scroll-padding-top:135px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation:none!important;transition:none!important}}
 
-  <!-- Top Header -->
-  <header>
-    <div class="header-top">
-      <div class="brand-wrap">
-        <div class="brand-title">
-          <span>⚡ Cache Tracker</span>
-          <span class="badge badge-primary">cpa-cache-tracker</span>
-        </div>
-
-        <!-- Tracing Switch (Approach B) -->
-        <label class="switch-container" title="切换运行时请求指纹提取与前缀追踪">
-          <span>追踪指纹 (trace_enabled)</span>
-          <div class="switch">
-            <input type="checkbox" id="trace-toggle">
-            <span class="slider"></span>
-          </div>
-          <span id="trace-status-text" class="badge badge-gray">加载中...</span>
-        </label>
-      </div>
-
-      <div class="header-actions">
-        <!-- Live Status Indicators -->
-        <div class="status-summary" id="status-summary">
-          <div class="status-item" title="CPA请求拦截挂载状态：未开启追踪时将零拷贝忽略Body">
-            <span>挂载状态:</span>
-            <strong id="stat-omit-body">-</strong>
-          </div>
-          <div class="status-item" title="磁盘占用 / 上限">
-            <span>存储:</span>
-            <strong id="stat-disk-usage">-</strong>
-          </div>
-          <div class="status-item" title="记录数与持久化文件数">
-            <span>记录:</span>
-            <strong id="stat-record-count">-</strong>
-          </div>
-        </div>
-
-        <!-- Control Buttons -->
-        <button id="reload-btn" class="btn" title="触发管理配置浅合并重载，使运行期参数与宿主同步">
-          <span>🔄 重载配置 (Reload Config)</span>
-        </button>
-
-        <button id="settings-btn" class="btn" title="设置保留周期与存储上限">
-          <span>⚙️ 设置与保留</span>
-        </button>
-
-        <button id="auth-btn" class="btn btn-sm" title="查看或更新管理密钥">
-          <span>🔑 凭据</span>
-        </button>
-      </div>
-    </div>
-  </header>
-
-  <!-- Main Content -->
-  <main>
-    <!-- Filter Bar -->
-    <section class="filter-bar">
-      <div class="filter-group">
-        <!-- Time Range Selector -->
-        <div class="range-selector" id="range-selector">
-          <button class="range-btn active" data-range="today">今日</button>
-          <button class="range-btn" data-range="yesterday">昨日</button>
-          <button class="range-btn" data-range="1h">1小时</button>
-          <button class="range-btn" data-range="24h">24小时</button>
-          <button class="range-btn" data-range="7d">7天</button>
-          <button class="range-btn" data-range="14d">14天</button>
-          <button class="range-btn" data-range="30d">30天</button>
-        </div>
-
-        <!-- Kind selector -->
-        <select id="kind-select" title="记录类型">
-          <option value="main" selected>主调用 (main)</option>
-          <option value="all">全部类型 (all)</option>
-          <option value="compact">压缩轮次 (compact)</option>
-          <option value="internal_subcall">内部子调用</option>
-          <option value="non_generate">非生成调用</option>
-        </select>
-
-        <!-- Model filter -->
-        <select id="model-select">
-          <option value="">全部模型 (All Models)</option>
-        </select>
-
-        <!-- Provider filter -->
-        <select id="provider-select">
-          <option value="">全部提供商 (All Providers)</option>
-        </select>
-
-        <!-- Status filter -->
-        <select id="status-select">
-          <option value="all">全部状态</option>
-          <option value="hit">仅命中 (Hit)</option>
-          <option value="miss">仅未命中 (Miss)</option>
-          <option value="failed">执行失败 (Failed)</option>
-        </select>
-      </div>
-
-      <div class="filter-group">
-        <input type="text" id="search-input" placeholder="搜索 Request/Trace/Session ID..." style="width: 220px;">
-        <label style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--text-muted);cursor:pointer;">
-          <input type="checkbox" id="autorefresh-toggle" checked>
-          <span>自动刷新 (10s)</span>
-        </label>
-        <button id="refresh-btn" class="btn btn-primary btn-sm">刷新</button>
-      </div>
-    </section>
-
-    <!-- KPI Cards Grid -->
-    <section class="kpi-grid">
-      <!-- 1. Token Hit Rate -->
-      <div class="kpi-card">
-        <div class="kpi-title">
-          <span>Token 命中率</span>
-          <span class="badge badge-primary">缓存读取占比</span>
-        </div>
-        <div class="kpi-value" id="kpi-token-hit-rate">0.0%</div>
-        <div class="kpi-sub">
-          <div class="kpi-sub-row">
-            <span>缓存读取:</span>
-            <strong id="kpi-cache-read-tokens">0</strong>
-          </div>
-          <div class="kpi-sub-row">
-            <span>有效输入:</span>
-            <strong id="kpi-effective-input-tokens">0</strong>
-          </div>
-        </div>
-      </div>
-
-      <!-- 2. Request Hit Rate -->
-      <div class="kpi-card">
-        <div class="kpi-title">
-          <span>请求命中率</span>
-          <span class="badge badge-success">Hit 请求数</span>
-        </div>
-        <div class="kpi-value" id="kpi-request-hit-rate">0.0%</div>
-        <div class="kpi-sub">
-          <div class="kpi-sub-row">
-            <span>命中请求:</span>
-            <strong id="kpi-hit-requests">0</strong>
-          </div>
-          <div class="kpi-sub-row">
-            <span>总请求数:</span>
-            <strong id="kpi-total-requests">0</strong>
-          </div>
-        </div>
-      </div>
-
-      <!-- 3. Token Breakdown -->
-      <div class="kpi-card">
-        <div class="kpi-title">
-          <span>Token 吞吐明细</span>
-          <span class="badge badge-gray">上下文记账</span>
-        </div>
-        <div class="kpi-value" id="kpi-total-tokens-short">0</div>
-        <div class="kpi-sub">
-          <div class="kpi-sub-row">
-            <span>缓存写入 (Write):</span>
-            <strong id="kpi-cache-write-tokens">0</strong>
-          </div>
-          <div class="kpi-sub-row">
-            <span>未命中输入 (Uncached):</span>
-            <strong id="kpi-uncached-tokens">0</strong>
-          </div>
-        </div>
-      </div>
-
-      <!-- 4. Cold vs Warm -->
-      <div class="kpi-card">
-        <div class="kpi-title">
-          <span>冷启动 vs 暖请求</span>
-          <span class="badge badge-warning">首轮与续接</span>
-        </div>
-        <div class="kpi-value" id="kpi-warm-hit-rate">0.0%</div>
-        <div class="kpi-sub">
-          <div class="kpi-sub-row">
-            <span>冷启动首轮:</span>
-            <strong id="kpi-cold-starts">0 (命中 0%)</strong>
-          </div>
-          <div class="kpi-sub-row">
-            <span>暖会话续接:</span>
-            <strong id="kpi-warm-requests">0</strong>
-          </div>
-        </div>
-      </div>
-
-      <!-- 5. Latency & TTFT -->
-      <div class="kpi-card">
-        <div class="kpi-title">
-          <span>时延与首字响应</span>
-          <span class="badge badge-primary">平均响应</span>
-        </div>
-        <div class="kpi-value" id="kpi-avg-latency">0 ms</div>
-        <div class="kpi-sub">
-          <div class="kpi-sub-row">
-            <span>平均首字延迟 (TTFT):</span>
-            <strong id="kpi-avg-ttft">0 ms</strong>
-          </div>
-          <div class="kpi-sub-row">
-            <span>失败请求数:</span>
-            <strong id="kpi-failed-requests" style="color:var(--danger)">0</strong>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Trend Chart -->
-    <section class="chart-card">
-      <div class="chart-header">
-        <div class="chart-title">
-          <span>📈 命中率与请求量趋势</span>
-          <select id="chart-model-select" class="btn-sm" style="margin-left: 10px;">
-            <option value="">全部模型曲线 (Overall)</option>
-          </select>
-        </div>
-        <div class="chart-legend">
-          <div class="legend-item">
-            <span class="legend-color" style="background:#10b981;"></span>
-            <span>Token 命中率 (%)</span>
-          </div>
-          <div class="legend-item">
-            <span class="legend-color" style="background:rgba(59, 130, 246, 0.4);"></span>
-            <span>请求量 (柱状)</span>
-          </div>
-        </div>
-      </div>
-      <div class="chart-wrapper">
-        <canvas id="trend-canvas"></canvas>
-        <div id="chart-tooltip" class="chart-tooltip"></div>
-      </div>
-    </section>
-
-    <!-- Analytics Split: Model Breakdown & Miss Reasons -->
-    <section class="analytics-grid">
-      <!-- Model Breakdown Table -->
-      <div class="panel-card">
-        <div class="diff-section-title">分模型命中率统计 (点击行可筛选)</div>
-        <div class="table-responsive">
-          <table>
-            <thead>
-              <tr>
-                <th>模型 (Display Model)</th>
-                <th>提供商</th>
-                <th>请求数</th>
-                <th>命中数</th>
-                <th>Token 命中率</th>
-                <th>请求命中率</th>
-                <th>缓存读取</th>
-                <th>有效输入</th>
-              </tr>
-            </thead>
-            <tbody id="models-table-body">
-              <tr><td colspan="8" class="empty-state">暂无模型数据</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Miss Reasons -->
-      <div class="panel-card">
-        <div class="diff-section-title">未命中原因归因 (Miss Reasons)</div>
-        <div id="miss-reasons-list" style="display:flex;flex-direction:column;gap:10px;">
-          <div class="empty-state">暂无未命中分析</div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Request Records Table -->
-    <section class="panel-card">
-      <div style="display:flex;justify-content:space-between;align-items:center;">
-        <div class="diff-section-title">请求记录与 Diff 追踪 (点击行可展开同会话对比)</div>
-        <div style="display:flex;gap:8px;align-items:center;">
-          <span style="font-size:12px;color:var(--text-dim);" id="records-total-hint">共 0 条记录</span>
-          <select id="records-limit-select" class="btn-sm">
-            <option value="25">25 条/页</option>
-            <option value="50" selected>50 条/页</option>
-            <option value="100">100 条/页</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="table-responsive">
-        <table>
-          <thead>
-            <tr>
-              <th>时间</th>
-              <th>状态</th>
-              <th>模型</th>
-              <th>会话标识 (Session Key)</th>
-              <th>缓存 Token (命中率)</th>
-              <th>耗时 (TTFT)</th>
-              <th>未命中原因</th>
-              <th>类型</th>
-              <th>操作</th>
-            </tr>
-          </thead>
-          <tbody id="records-table-body">
-            <tr><td colspan="9" class="empty-state">暂无请求记录</td></tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Pagination -->
-      <div class="pagination">
-        <button id="prev-page-btn" class="btn btn-sm" disabled>上一页</button>
-        <span id="page-info">第 1 页</span>
-        <button id="next-page-btn" class="btn btn-sm" disabled>下一页</button>
-      </div>
-    </section>
-  </main>
-
-  <!-- Same-Session Diff Drawer -->
-  <div id="drawer-backdrop" class="drawer-backdrop"></div>
-  <aside id="diff-drawer" class="drawer">
-    <div class="drawer-header">
-      <div class="drawer-title">同会话前后轮次 Diff 诊断</div>
-      <button id="drawer-close-btn" class="btn btn-sm">✕ 关闭</button>
-    </div>
-    <div class="drawer-body" id="drawer-body">
-      <div class="empty-state">正在加载 Diff 详情...</div>
-    </div>
-  </aside>
-
-  <!-- Settings & Retention Modal -->
-  <div id="settings-modal-backdrop" class="modal-backdrop">
-    <div class="modal">
-      <div class="modal-title">⚙️ 设置与数据保留</div>
-      
-      <div class="form-group">
-        <label>保留天数 (retention_days，0 表示永久保留):</label>
-        <input type="number" id="setting-retention-days" min="0" value="14">
-      </div>
-
-      <div class="form-group">
-        <label>最大磁盘占用上限 (max_disk_mb，MB):</label>
-        <input type="number" id="setting-max-disk-mb" min="10" value="200">
-      </div>
-
-      <div class="form-group">
-        <label>最大消息哈希截断数 (max_message_hashes):</label>
-        <input type="number" id="setting-max-message-hashes" min="16" value="512">
-      </div>
-
-      <div style="border-top:1px solid var(--border-normal);padding-top:12px;margin-top:4px;">
-        <div style="font-weight:600;font-size:12px;margin-bottom:8px;color:#f87171;">数据清理操作</div>
-        <div style="display:flex;gap:10px;">
-          <button id="purge-expired-btn" class="btn btn-sm">🧹 清理过期数据</button>
-          <button id="purge-all-btn" class="btn btn-sm btn-danger">⚠️ 清空全部数据</button>
-        </div>
-      </div>
-
-      <div class="modal-actions">
-        <button id="settings-cancel-btn" class="btn">取消</button>
-        <button id="settings-save-btn" class="btn btn-primary">保存配置</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Auth Key Modal -->
-  <div id="auth-modal-backdrop" class="modal-backdrop">
-    <div class="modal">
-      <div class="modal-title">🔑 CPA 管理凭据设置</div>
-      <div style="font-size:12px;color:var(--text-muted);">
+.drawer:not(.open){visibility:hidden;box-shadow:none}
+@media(max-width:380px){.metric-5 .kpi-value{font-size:23px;letter-spacing:-1px}}
+</style></head>
+<body><svg aria-hidden="true" class="icon-sprite" xmlns="http://www.w3.org/2000/svg"><defs><symbol id="i-grid" viewbox="0 0 24 24"><rect height="7" rx="1.5" width="7" x="3" y="3"></rect><rect height="7" rx="1.5" width="7" x="14" y="3"></rect><rect height="7" rx="1.5" width="7" x="3" y="14"></rect><rect height="7" rx="1.5" width="7" x="14" y="14"></rect></symbol><symbol id="i-layers" viewbox="0 0 24 24"><path d="m3 8 9-5 9 5-9 5-9-5Zm0 5 9 5 9-5M3 18l9 5 9-5"></path></symbol><symbol id="i-list" viewbox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"></path></symbol><symbol id="i-database" viewbox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M3 5v14c0 4 18 4 18 0V5M3 12c0 4 18 4 18 0"></path></symbol><symbol id="i-lock" viewbox="0 0 24 24"><rect height="11" rx="2" width="14" x="5" y="10"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3m-4 5v2"></path></symbol><symbol id="i-refresh" viewbox="0 0 24 24"><path d="M20 7v5h-5M4 17v-5h5M6 7a7 7 0 0 1 12-2l2 3M4 16l2 3a7 7 0 0 0 12-2"></path></symbol><symbol id="i-sliders" viewbox="0 0 24 24"><path d="M4 7h8m4 0h4M4 17h2m4 0h10"></path><circle cx="14" cy="7" r="2"></circle><circle cx="8" cy="17" r="2"></circle></symbol><symbol id="i-arrow" viewbox="0 0 24 24"><path d="M5 12h14m-5-5 5 5-5 5"></path></symbol><symbol id="i-pulse" viewbox="0 0 24 24"><path d="M2 12h5l3-8 4 16 3-8h5"></path></symbol></defs></svg><aside aria-label="主导航" class="app-sidebar">
+<a class="sidebar-brand" href="#overview"><span class="brand-mark">C<span></span></span><span>Cache Tracker<small>CPA OBSERVABILITY</small></span></a>
+<div class="nav-label">监控工作台</div>
+<nav><a aria-label="缓存概览" class="nav-link active" href="#overview"><svg aria-hidden="true" class="icon"><use href="#i-grid"></use></svg><span>缓存概览</span><span class="nav-dot"></span></a><a aria-label="模型分析" class="nav-link" href="#models"><svg aria-hidden="true" class="icon"><use href="#i-layers"></use></svg><span>模型分析</span></a><a aria-label="请求记录" class="nav-link" href="#requests"><svg aria-hidden="true" class="icon"><use href="#i-list"></use></svg><span>请求记录</span></a></nav>
+<div class="nav-divider"></div><div class="nav-label">工作区</div>
+<nav><button aria-label="存储与保留" class="nav-link" id="sidebar-settings"><svg aria-hidden="true" class="icon"><use href="#i-database"></use></svg><span>存储与保留</span></button><button aria-label="管理凭据" class="nav-link" id="sidebar-auth"><svg aria-hidden="true" class="icon"><use href="#i-lock"></use></svg><span>管理凭据</span></button></nav>
+<div class="sidebar-note"><div><span class="live-dot"></span>本地工作区</div><span>数据保存在本机</span><small>CLIProxyAPI · Cache Tracker</small></div>
+</aside>
+<!-- Top Header -->
+<header>
+<div class="header-top">
+<div class="brand-wrap">
+<div class="brand-title"><span class="breadcrumb-muted">工作区 <span class="slash">/</span></span><span>缓存监控</span></div>
+<!-- Tracing Switch (Approach B) -->
+</div>
+<div class="header-actions"><span class="live-pill"><span class="live-dot"></span>实时观测</span>
+<!-- Live Status Indicators -->
+<!-- Control Buttons -->
+<button class="btn" id="settings-btn" title="设置保留周期与存储上限"><svg aria-hidden="true" class="icon"><use href="#i-sliders"></use></svg><span>设置</span></button>
+<button aria-label="管理凭据" class="btn btn-sm" id="auth-btn" title="查看或更新管理密钥"><svg aria-hidden="true" class="icon"><use href="#i-lock"></use></svg></button>
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main><section class="page-intro" id="overview"><div><div class="eyebrow">CACHE ANALYTICS</div><h1>缓存概览<span class="title-dot">.</span></h1><p>查看每一次请求的缓存表现，快速定位未命中原因。</p></div><div class="intro-actions"><label class="switch-container" title="开启内容指纹以比较同会话的请求差异">
+<span>指纹追踪</span>
+<div class="switch">
+<input id="trace-toggle" type="checkbox"/>
+<span class="slider"></span>
+</div>
+<span class="badge badge-gray" id="trace-status-text">加载中...</span>
+</label><button class="btn" id="reload-btn" title="重新加载并同步当前配置"><svg aria-hidden="true" class="icon"><use href="#i-refresh"></use></svg><span>重载配置</span></button></div></section><div class="status-strip" id="status-summary">
+<div class="status-item" title="CPA请求拦截挂载状态：未开启追踪时将零拷贝忽略Body">
+<span>采集状态</span>
+<strong id="stat-omit-body">-</strong>
+</div>
+<div class="status-item" title="磁盘占用 / 上限">
+<span>存储用量</span>
+<strong id="stat-disk-usage">-</strong>
+</div>
+<div class="status-item" title="记录数与持久化文件数">
+<span>累计记录</span>
+<strong id="stat-record-count">-</strong>
+</div>
+</div>
+<!-- Filter Bar -->
+<section class="filter-bar">
+<div class="filter-group">
+<!-- Time Range Selector -->
+<div class="range-selector" id="range-selector">
+<button class="range-btn active" data-range="today">今日</button>
+<button class="range-btn" data-range="yesterday">昨日</button>
+<button class="range-btn" data-range="1h">1小时</button>
+<button class="range-btn" data-range="24h">24小时</button>
+<button class="range-btn" data-range="7d">7天</button>
+<button class="range-btn" data-range="14d">14天</button>
+<button class="range-btn" data-range="30d">30天</button>
+</div>
+<!-- Kind selector -->
+<select id="kind-select" title="记录类型">
+<option selected="" value="main">主调用 (main)</option>
+<option value="all">全部类型 (all)</option>
+<option value="compact">压缩轮次 (compact)</option>
+<option value="internal_subcall">内部子调用</option>
+<option value="non_generate">非生成调用</option>
+</select>
+<!-- Model filter -->
+<select aria-label="按模型筛选" id="model-select">
+<option value="">全部模型 (All Models)</option>
+</select>
+<!-- Provider filter -->
+<select aria-label="按提供商筛选" id="provider-select">
+<option value="">全部提供商 (All Providers)</option>
+</select>
+<!-- Status filter -->
+<select aria-label="按请求状态筛选" id="status-select">
+<option value="all">全部状态</option>
+<option value="hit">仅命中 (Hit)</option>
+<option value="miss">仅未命中 (Miss)</option>
+<option value="failed">执行失败 (Failed)</option>
+</select>
+</div>
+<div class="filter-group">
+<input aria-label="搜索请求记录" id="search-input" placeholder="搜索请求、会话或 Trace ID" style="width: 220px;" type="text"/>
+<label style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--text-muted);cursor:pointer;">
+<input checked="" id="autorefresh-toggle" type="checkbox"/>
+<span>自动刷新 (10s)</span>
+</label>
+<button class="btn btn-primary btn-sm" id="refresh-btn">刷新数据</button>
+</div>
+</section>
+<!-- KPI Cards Grid -->
+<section class="kpi-grid">
+<!-- 1. Token Hit Rate -->
+<div class="kpi-card metric-1">
+<div class="kpi-title">
+<span>Token 命中率</span>
+<span class="badge badge-primary kpi-caption">缓存读取占比</span>
+</div>
+<div class="kpi-value" id="kpi-token-hit-rate">0.0%</div>
+<div class="kpi-sub">
+<div class="kpi-sub-row">
+<span>缓存读取:</span>
+<strong id="kpi-cache-read-tokens">0</strong>
+</div>
+<div class="kpi-sub-row">
+<span>有效输入:</span>
+<strong id="kpi-effective-input-tokens">0</strong>
+</div>
+</div>
+</div>
+<!-- 2. Request Hit Rate -->
+<div class="kpi-card metric-2">
+<div class="kpi-title">
+<span>请求命中率</span>
+<span class="badge badge-success kpi-caption">Hit 请求数</span>
+</div>
+<div class="kpi-value" id="kpi-request-hit-rate">0.0%</div>
+<div class="kpi-sub">
+<div class="kpi-sub-row">
+<span>命中请求:</span>
+<strong id="kpi-hit-requests">0</strong>
+</div>
+<div class="kpi-sub-row">
+<span>总请求数:</span>
+<strong id="kpi-total-requests">0</strong>
+</div>
+</div>
+</div>
+<!-- 3. Token Breakdown -->
+<div class="kpi-card metric-3">
+<div class="kpi-title">
+<span>有效输入</span>
+<span class="badge badge-gray kpi-caption">上下文记账</span>
+</div>
+<div class="kpi-value" id="kpi-total-tokens-short">0</div>
+<div class="kpi-sub">
+<div class="kpi-sub-row">
+<span>缓存写入 (Write):</span>
+<strong id="kpi-cache-write-tokens">0</strong>
+</div>
+<div class="kpi-sub-row">
+<span>未命中输入 (Uncached):</span>
+<strong id="kpi-uncached-tokens">0</strong>
+</div>
+</div>
+</div>
+<!-- 4. Cold vs Warm -->
+<div class="kpi-card metric-4">
+<div class="kpi-title">
+<span>暖请求命中率</span>
+<span class="badge badge-warning kpi-caption">首轮与续接</span>
+</div>
+<div class="kpi-value" id="kpi-warm-hit-rate">0.0%</div>
+<div class="kpi-sub">
+<div class="kpi-sub-row">
+<span>冷启动首轮:</span>
+<strong id="kpi-cold-starts">0 (命中 0%)</strong>
+</div>
+<div class="kpi-sub-row">
+<span>暖会话续接:</span>
+<strong id="kpi-warm-requests">0</strong>
+</div>
+</div>
+</div>
+<!-- 5. Latency & TTFT -->
+<div class="kpi-card metric-5">
+<div class="kpi-title">
+<span>平均响应时间</span>
+<span class="badge badge-primary kpi-caption">平均响应</span>
+</div>
+<div class="kpi-value" id="kpi-avg-latency">0 ms</div>
+<div class="kpi-sub">
+<div class="kpi-sub-row">
+<span>平均首字延迟 (TTFT):</span>
+<strong id="kpi-avg-ttft">0 ms</strong>
+</div>
+<div class="kpi-sub-row">
+<span>失败请求数:</span>
+<strong id="kpi-failed-requests" style="color:var(--danger)">0</strong>
+</div>
+</div>
+</div>
+</section><section aria-label="缓存趋势与未命中分析" class="chart-layout"><section class="chart-card">
+<div class="chart-header">
+<div class="chart-title">
+<span>命中率趋势</span>
+<select aria-label="选择趋势模型" class="btn-sm" id="chart-model-select" style="margin-left: 10px;">
+<option value="">全部模型曲线 (Overall)</option>
+</select>
+</div>
+<div class="chart-legend">
+<div class="legend-item">
+<span class="legend-color" style="background:#10b981;"></span>
+<span>Token 命中率 (%)</span>
+</div>
+<div class="legend-item">
+<span class="legend-color" style="background:rgba(59, 130, 246, 0.4);"></span>
+<span>请求量 (柱状)</span>
+</div>
+</div>
+</div><div class="section-description">观察缓存命中率与请求量的变化</div>
+<div class="chart-wrapper">
+<canvas id="trend-canvas"></canvas>
+<div class="chart-tooltip" id="chart-tooltip"></div>
+</div>
+</section><div class="panel-card reason-card">
+<div class="diff-section-title">未命中分析</div><p class="section-description">从请求差异中寻找线索</p>
+<div id="miss-reasons-list" style="display:flex;flex-direction:column;gap:10px;">
+<div class="empty-state">暂无未命中分析</div>
+</div>
+</div></section>
+<!-- Trend Chart -->
+<!-- Analytics Split: Model Breakdown & Miss Reasons -->
+<section class="analytics-grid" id="models">
+<!-- Model Breakdown Table -->
+<div class="panel-card model-card">
+<div class="diff-section-title">模型分析 <span class="heading-note">点击模型以筛选</span></div>
+<div class="table-responsive">
+<table>
+<thead>
+<tr>
+<th>模型 (Display Model)</th>
+<th>提供商</th>
+<th>请求数</th>
+<th>命中数</th>
+<th>Token 命中率</th>
+<th>请求命中率</th>
+<th>缓存读取</th>
+<th>有效输入</th>
+</tr>
+</thead>
+<tbody id="models-table-body">
+<tr><td class="empty-state" colspan="8">暂无模型数据</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Miss Reasons -->
+</section>
+<!-- Request Records Table -->
+<section class="panel-card" id="requests">
+<div style="display:flex;justify-content:space-between;align-items:center;">
+<div class="diff-section-title">请求记录 <span class="heading-note">选择记录，比较前后轮次</span></div>
+<div style="display:flex;gap:8px;align-items:center;">
+<span id="records-total-hint" style="font-size:12px;color:var(--text-dim);">共 0 条记录</span>
+<select aria-label="每页记录数" class="btn-sm" id="records-limit-select">
+<option value="25">25 条/页</option>
+<option selected="" value="50">50 条/页</option>
+<option value="100">100 条/页</option>
+</select>
+</div>
+</div>
+<div class="table-responsive">
+<table>
+<thead>
+<tr>
+<th>时间</th>
+<th>状态</th>
+<th>模型</th>
+<th>会话标识</th>
+<th>缓存读取 / 输入</th>
+<th>响应 / 首字延迟</th>
+<th>未命中原因</th>
+<th>类型</th>
+<th>操作</th>
+</tr>
+</thead>
+<tbody id="records-table-body">
+<tr><td class="empty-state" colspan="9">暂无请求记录</td></tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="pagination">
+<button class="btn btn-sm" disabled="" id="prev-page-btn">上一页</button>
+<span id="page-info">第 1 页</span>
+<button class="btn btn-sm" disabled="" id="next-page-btn">下一页</button>
+</div>
+</section>
+</main>
+<!-- Same-Session Diff Drawer -->
+<div class="drawer-backdrop" id="drawer-backdrop"></div>
+<aside class="drawer" id="diff-drawer">
+<div class="drawer-header">
+<div class="drawer-title">会话请求对比</div>
+<button class="btn btn-sm" id="drawer-close-btn">✕ 关闭</button>
+</div>
+<div class="drawer-body" id="drawer-body">
+<div class="empty-state">正在加载 Diff 详情...</div>
+</div>
+</aside>
+<!-- Settings & Retention Modal -->
+<div class="modal-backdrop" id="settings-modal-backdrop">
+<div class="modal">
+<div class="modal-title">设置与数据保留</div>
+<div class="form-group">
+<label>保留天数 (retention_days，0 表示永久保留):</label>
+<input id="setting-retention-days" min="0" type="number" value="14"/>
+</div>
+<div class="form-group">
+<label>最大磁盘占用上限 (max_disk_mb，MB):</label>
+<input id="setting-max-disk-mb" min="10" type="number" value="200"/>
+</div>
+<div class="form-group">
+<label>最大消息哈希截断数 (max_message_hashes):</label>
+<input id="setting-max-message-hashes" min="16" type="number" value="512"/>
+</div>
+<div style="border-top:1px solid var(--border-normal);padding-top:12px;margin-top:4px;">
+<div style="font-weight:600;font-size:12px;margin-bottom:8px;color:#f87171;">数据清理操作</div>
+<div style="display:flex;gap:10px;">
+<button class="btn btn-sm" id="purge-expired-btn">🧹 清理过期数据</button>
+<button class="btn btn-sm btn-danger" id="purge-all-btn">⚠️ 清空全部数据</button>
+</div>
+</div>
+<div class="modal-actions">
+<button class="btn" id="settings-cancel-btn">取消</button>
+<button class="btn btn-primary" id="settings-save-btn">保存配置</button>
+</div>
+</div>
+</div>
+<!-- Auth Key Modal -->
+<div class="modal-backdrop" id="auth-modal-backdrop">
+<div class="modal">
+<div class="modal-title">CPA 管理凭据设置</div>
+<div style="font-size:12px;color:var(--text-muted);">
         请输入 CPA 管理密钥 (Management Key)。此密钥仅保存在当前浏览器 sessionStorage 中，不会泄露或外传。
       </div>
-      <div class="form-group">
-        <label>Management Key:</label>
-        <input type="password" id="auth-key-input" placeholder="输入 Bearer 管理密钥">
-      </div>
-      <div class="modal-actions">
-        <button id="auth-cancel-btn" class="btn">取消</button>
-        <button id="auth-save-btn" class="btn btn-primary">保存并连接</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Toast Container -->
-  <div id="toast-container" class="toast-container"></div>
-
-  <!-- Application Logic (Offline Pure Vanilla JS) -->
-  <script>
+<div class="form-group">
+<label>Management Key:</label>
+<input id="auth-key-input" placeholder="输入 Bearer 管理密钥" type="password"/>
+</div>
+<div class="modal-actions">
+<button class="btn" id="auth-cancel-btn">取消</button>
+<button class="btn btn-primary" id="auth-save-btn">保存并连接</button>
+</div>
+</div>
+</div>
+<!-- Toast Container -->
+<div class="toast-container" id="toast-container"></div>
+<!-- Application Logic (Offline Pure Vanilla JS) -->
+<script>
     (function () {
       "use strict";
 
@@ -1220,14 +1215,14 @@
           toggle.checked = Boolean(st.trace_enabled);
         }
         if (statusText) {
-          statusText.textContent = st.trace_enabled ? "ON (活动)" : "OFF (停用)";
+          statusText.textContent = st.trace_enabled ? "已开启" : "已关闭";
           statusText.className = "badge " + (st.trace_enabled ? "badge-success" : "badge-gray");
         }
 
         // Summary pills
         const omitEl = document.getElementById("stat-omit-body");
         if (omitEl) {
-          omitEl.textContent = st.omit_body_after ? "已生效零拷贝 (Omit)" : "实时全量检查 (Active)";
+          omitEl.textContent = st.omit_body_after ? "仅采集用量" : "指纹与用量";
           omitEl.style.color = st.omit_body_after ? "var(--warning)" : "var(--success)";
         }
 
@@ -1241,7 +1236,7 @@
 
         const countEl = document.getElementById("stat-record-count");
         if (countEl) {
-          countEl.textContent = (st.record_count || 0) + " 条 (" + (st.file_count || 0) + " 文件)";
+          countEl.textContent = (st.record_count || 0) + " 条 · " + (st.file_count || 0) + " 个文件";
         }
       }
 
@@ -1302,7 +1297,7 @@
         if (mrContainer) {
           while (mrContainer.firstChild) mrContainer.removeChild(mrContainer.firstChild);
           if (!sum.miss_reasons || sum.miss_reasons.length === 0) {
-            mrContainer.appendChild(el("div", { className: "empty-state" }, "全部请求已命中缓存"));
+            mrContainer.appendChild(el("div", { className: "empty-state" }, t.requests > 0 ? "当前时段没有未命中请求" : "等待请求数据"));
           } else {
             const maxCount = Math.max(...sum.miss_reasons.map(r => r.count || 1));
             sum.miss_reasons.forEach(r => {
@@ -1325,19 +1320,19 @@
 
       function formatMissReason(reason) {
         switch (reason) {
-          case "cold_start": return "❄️ 会话首轮冷启动 (Cold Start)";
+          case "cold_start": return "会话首轮冷启动";
           case "prefix_modified":
-          case "prefix_diverged": return "🔀 历史对话前缀发生差异 (Prefix Diverged)";
+          case "prefix_diverged": return "历史对话前缀变更";
           case "auth_switched":
-          case "auth_changed": return "🔑 上游账号切换 (Auth Changed)";
+          case "auth_changed": return "上游账号切换";
           case "system_changed":
-          case "system_prompt_changed": return "📝 系统提示词变更 (System Hash Changed)";
-          case "tools_changed": return "🛠️ 工具声明发生变更 (Tools Changed)";
+          case "system_prompt_changed": return "系统提示词变更";
+          case "tools_changed": return "工具声明变更";
           case "trace_disabled": return "指纹追踪未启用";
           case "history_shortened": return "历史对话缩短";
           case "options_changed": return "请求参数变更";
-          case "model_changed": return "🤖 模型切换 (Model Changed)";
-          case "upstream_cache_miss": return "☁️ 上游提供商侧未命中或已逐出 (Upstream Miss)";
+          case "model_changed": return "模型切换";
+          case "upstream_cache_miss": return "上游缓存未命中";
           default: return reason || "未命中";
         }
       }
@@ -1415,11 +1410,11 @@
           const isHit = rec.tokens && (rec.tokens.request_hit || rec.tokens.cache_read > 0);
           let statusBadge;
           if (rec.failed) {
-            statusBadge = el("span", { className: "badge badge-danger" }, "Failed");
+            statusBadge = el("span", { className: "badge badge-danger" }, "失败");
           } else if (isHit) {
-            statusBadge = el("span", { className: "badge badge-success" }, "Hit");
+            statusBadge = el("span", { className: "badge badge-success" }, "命中");
           } else {
-            statusBadge = el("span", { className: "badge badge-gray" }, "Miss");
+            statusBadge = el("span", { className: "badge badge-gray" }, "未命中");
           }
 
           const hitRate = (rec.tokens && rec.tokens.effective_input > 0)
@@ -1433,7 +1428,7 @@
             el("td", null, formatDate(rec.timestamp)),
             el("td", null, statusBadge),
             el("td", { className: "mono" }, rec.display_model || rec.model || "-"),
-            el("td", { className: "mono truncate", title: sessKey }, shortSess),
+            el("td", null, el("span", { className: "mono truncate", title: sessKey }, shortSess)),
             el("td", null,
               el("span", { className: "mono" }, formatNumber(rec.tokens?.cache_read || 0) + " / " + formatNumber(rec.tokens?.effective_input || 0)),
               el("span", { style: { color: "var(--text-dim)", marginLeft: "6px" } }, "(" + hitRate + ")")
@@ -1444,7 +1439,7 @@
             el("td", null, el("button", { 
               className: "btn btn-sm",
               onclick: (e) => { e.stopPropagation(); openDiffDrawer(rec.id); }
-            }, "🔍 Diff"))
+            }, "查看对比 →"))
           );
 
           tbody.appendChild(row);
@@ -1515,7 +1510,7 @@
         maxReq = Math.ceil(maxReq * 1.15);
 
         // Draw horizontal grid lines (0%, 25%, 50%, 75%, 100%)
-        ctx.strokeStyle = "#1f2937";
+        ctx.strokeStyle = "#e9eeeb";
         ctx.lineWidth = 1;
         ctx.fillStyle = "#6b7280";
         ctx.font = "10px -apple-system, sans-serif";
@@ -1542,7 +1537,7 @@
 
         // Draw request volume bars
         const barWidth = Math.max(2, Math.min(24, (chartW / n) * 0.5));
-        ctx.fillStyle = "rgba(59, 130, 246, 0.25)";
+        ctx.fillStyle = "rgba(112, 162, 134, 0.22)";
         series.forEach((pt, idx) => {
           const x = padLeft + (n > 1 ? idx * stepX : chartW / 2) - barWidth / 2;
           const barH = (pt.requests / maxReq) * chartH;
@@ -1560,7 +1555,7 @@
         });
 
         // Stroke line
-        ctx.strokeStyle = "#10b981";
+        ctx.strokeStyle = "#299563";
         ctx.lineWidth = 2.5;
         ctx.stroke();
 
@@ -1571,7 +1566,7 @@
         ctx.lineTo(firstX, padTop + chartH);
         ctx.closePath();
         const grad = ctx.createLinearGradient(0, padTop, 0, padTop + chartH);
-        grad.addColorStop(0, "rgba(16, 185, 129, 0.25)");
+        grad.addColorStop(0, "rgba(41, 149, 99, 0.16)");
         grad.addColorStop(1, "rgba(16, 185, 129, 0.0)");
         ctx.fillStyle = grad;
         ctx.fill();
@@ -1580,14 +1575,14 @@
         series.forEach((pt, idx) => {
           const x = padLeft + (n > 1 ? idx * stepX : chartW / 2);
           const y = padTop + chartH - ((pt.token_hit_rate || 0) / 100) * chartH;
-          ctx.fillStyle = "#10b981";
+          ctx.fillStyle = "#299563";
           ctx.beginPath();
           ctx.arc(x, y, 3, 0, Math.PI * 2);
           ctx.fill();
         });
 
         // Draw X-axis timestamps (skip crowded labels)
-        ctx.fillStyle = "#9ca3af";
+        ctx.fillStyle = "#819187";
         ctx.textAlign = "center";
         const labelInterval = Math.ceil(n / 6);
         series.forEach((pt, idx) => {
@@ -2021,6 +2016,14 @@
 
       // Event Wiring
       function setupEventListeners() {
+        const sidebarSettings = document.getElementById("sidebar-settings");
+        if (sidebarSettings) sidebarSettings.addEventListener("click", openSettingsModal);
+        const sidebarAuth = document.getElementById("sidebar-auth");
+        if (sidebarAuth) sidebarAuth.addEventListener("click", () => openAuthModal());
+        document.querySelectorAll(".app-sidebar a.nav-link").forEach(link => link.addEventListener("click", () => {
+          document.querySelectorAll(".app-sidebar a.nav-link").forEach(item => item.classList.remove("active"));
+          link.classList.add("active");
+        }));
         // Range buttons
         const rangeContainer = document.getElementById("range-selector");
         if (rangeContainer) {

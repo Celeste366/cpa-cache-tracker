@@ -19,7 +19,7 @@ make build
 make install
 ```
 
-Release: **0.1.1**, C ABI 1, schema 10. The host switches native libraries by versioned path, so replacing a loaded library at the same path does not activate its new bytes. Install a new versioned filename and trigger a CPA config reload. Keep the previous version or backup for rollback.
+Release: **0.1.2**, C ABI 1, schema 10. The host switches native libraries by versioned path, so replacing a loaded library at the same path does not activate its new bytes. Install a new versioned filename and trigger a CPA config reload. Keep the previous version or backup for rollback.
 
 Enable under CPA config.yaml:
 
@@ -53,3 +53,8 @@ Authenticated APIs live under /v0/management/plugins/cpa-cache-tracker/: status,
 ## Release 0.1.1
 
 Preserves usage session IDs when interception metadata is missing; handles WorkBuddy's inclusive input accounting; excludes non-generation and zero-input events from main hit rates; recognizes actual host callback metadata; prefers selection IDs for nested calls; bounds retained full fingerprints; stops credential-error polling; waits for runtime configuration synchronization before reporting reload success.
+
+## Release 0.1.2
+
+Forest/Porcelain dashboard redesign: responsive sidebar, clearer overview and metric hierarchy, paired trend/diagnosis panels, full-width model/request tables, consistent settings and diff surfaces, accessible filter/navigation labels, and reduced-motion support. Existing API paths, data bindings, tracing controls and authentication behavior are retained.
+
