@@ -1,0 +1,181 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag (e.g. v0.1.4)"
+        required: false
+
+permissions:
+  contents: write
+
+env:
+  PLUGIN_ID: cpa-cache-tracker
+  DEFAULT_VERSION: 0.1.4
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.23.x"
+          cache: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Go vet and race tests
+        run: |
+          go vet ./...
+          CGO_ENABLED=1 go test -race -v ./...
+      - name: Frontend tests
+        run: node --test ui/panel_*.test.cjs
+
+  build:
+    name: Build ${{ matrix.goos }}/${{ matrix.goarch }}
+    needs: test
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            goos: linux
+            goarch: amd64
+            ext: so
+          - os: ubuntu-latest
+            goos: linux
+            goarch: arm64
+            ext: so
+            cc: aarch64-linux-gnu-gcc
+            extra_apt: gcc-aarch64-linux-gnu
+            goarm64: v8.0
+            cgo_cflags: "-march=armv8-a"
+          - os: macos-latest
+            goos: darwin
+            goarch: arm64
+            ext: dylib
+            goarm64: v8.0
+            cgo_cflags: "-march=armv8-a"
+          - os: macos-latest
+            goos: darwin
+            goarch: amd64
+            ext: dylib
+            cgo_cflags: "-arch x86_64"
+            cgo_ldflags: "-arch x86_64"
+          - os: ubuntu-latest
+            goos: windows
+            goarch: amd64
+            ext: dll
+            cc: x86_64-w64-mingw32-gcc
+            extra_apt: gcc-mingw-w64-x86-64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.23.x"
+          cache: false
+      - name: Install cross-compiler
+        if: matrix.extra_apt != ''
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ${{ matrix.extra_apt }}
+      - name: Build and package
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG_INPUT="${{ github.event.inputs.tag }}"
+          if [[ -n "${TAG_INPUT}" ]]; then
+            VERSION="${TAG_INPUT#v}"
+          elif [[ "${GITHUB_REF_TYPE:-}" == "tag" && "${GITHUB_REF_NAME:-}" == v* ]]; then
+            VERSION="${GITHUB_REF_NAME#v}"
+          else
+            VERSION="${DEFAULT_VERSION}"
+          fi
+
+          mkdir -p dist
+          LIB_NAME="${PLUGIN_ID}.${{ matrix.ext }}"
+          ARCHIVE_NAME="${PLUGIN_ID}_${VERSION}_${{ matrix.goos }}_${{ matrix.goarch }}.zip"
+
+          if [ -n "${{ matrix.cc }}" ]; then
+            export CC="${{ matrix.cc }}"
+          fi
+          if [ -n "${{ matrix.goarm64 }}" ]; then
+            export GOARM64="${{ matrix.goarm64 }}"
+          fi
+          if [ -n "${{ matrix.cgo_cflags }}" ]; then
+            export CGO_CFLAGS="${{ matrix.cgo_cflags }}"
+          fi
+          if [ -n "${{ matrix.cgo_ldflags }}" ]; then
+            export CGO_LDFLAGS="${{ matrix.cgo_ldflags }}"
+          fi
+
+          CGO_ENABLED=1 GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} \
+            go build -trimpath -buildmode=c-shared \
+            -ldflags "-s -w" \
+            -o "dist/${LIB_NAME}" .
+          rm -f dist/*.h
+
+          go run scripts/package-release.go \
+            -library "dist/${LIB_NAME}" \
+            -archive "dist/${ARCHIVE_NAME}" \
+            -checksum "dist/${ARCHIVE_NAME}.sha256"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: artifacts-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: |
+            dist/*.zip
+            dist/*.sha256
+          if-no-files-found: error
+
+  release:
+    name: Release
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: artifacts-*
+          merge-multiple: true
+          path: dist
+      - name: Publish release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          TAG_INPUT="${{ github.event.inputs.tag }}"
+          if [[ -n "${TAG_INPUT}" ]]; then
+            RELEASE_TAG="${TAG_INPUT}"
+          elif [[ "${GITHUB_REF_TYPE:-}" == "tag" ]]; then
+            RELEASE_TAG="${GITHUB_REF_NAME}"
+          else
+            RELEASE_TAG="v${DEFAULT_VERSION}"
+          fi
+          [[ "${RELEASE_TAG}" == v* ]] || RELEASE_TAG="v${RELEASE_TAG}"
+
+          cd dist
+          cat *.sha256 | sort > checksums.txt
+          echo "Generated checksums.txt:"
+          cat checksums.txt
+          cd ..
+
+          if gh release view "${RELEASE_TAG}" >/dev/null 2>&1; then
+            gh release upload "${RELEASE_TAG}" dist/*.zip dist/checksums.txt --clobber
+          else
+            gh release create "${RELEASE_TAG}" \
+              dist/*.zip \
+              dist/checksums.txt \
+              --title "${RELEASE_TAG}" \
+              --generate-notes
+          fi

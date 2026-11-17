@@ -1,3 +1,3 @@
 module cpa-cache-tracker
 
-go 1.26
+go 1.23.0
